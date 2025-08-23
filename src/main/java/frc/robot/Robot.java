@@ -31,7 +31,7 @@ import org.littletonrobotics.urcl.URCL;
  */
 public class Robot extends LoggedRobot {
   private Command autonomousCommand;
-  private RobotContainer robotContainer;
+  private final RobotContainer robotContainer;
 
   public Robot() {
     // Record metadata
