@@ -13,10 +13,14 @@
 
 package frc.robot.generic.subsystems.drive;
 
+import static edu.wpi.first.units.Units.Rotation;
 import static frc.robot.generic.subsystems.drive.DriveConstants.*;
 import static frc.robot.generic.util.SparkUtil.*;
 
-import com.revrobotics.AbsoluteEncoder;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.MagnetSensorConfigs;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
@@ -25,16 +29,15 @@ import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
-import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.Angle;
 import java.util.Queue;
 import java.util.function.DoubleSupplier;
 
@@ -49,7 +52,7 @@ public class ModuleIOSpark implements ModuleIO {
   private final SparkBase driveSpark;
   private final SparkBase turnSpark;
   private final RelativeEncoder driveEncoder;
-  private final AbsoluteEncoder turnEncoder;
+  private final RelativeEncoder turnEncoder;
 
   // Closed loop controllers
   private final SparkClosedLoopController driveController;
@@ -59,6 +62,8 @@ public class ModuleIOSpark implements ModuleIO {
   private final Queue<Double> timestampQueue;
   private final Queue<Double> drivePositionQueue;
   private final Queue<Double> turnPositionQueue;
+
+  private final CANcoder absoluteEncoder;
 
   // Connection debouncers
   private final Debouncer driveConnectedDebounce = new Debouncer(0.5);
@@ -74,7 +79,7 @@ public class ModuleIOSpark implements ModuleIO {
           default -> new Rotation2d();
         };
     driveSpark =
-        new SparkFlex(
+        new SparkMax(
             switch (module) {
               case 0 -> frontLeftDriveCanId;
               case 1 -> frontRightDriveCanId;
@@ -93,13 +98,32 @@ public class ModuleIOSpark implements ModuleIO {
               default -> 0;
             },
             MotorType.kBrushless);
+    absoluteEncoder =
+        new CANcoder(
+            switch (module) {
+              case 0 -> frontLeftCanCoderId;
+              case 1 -> frontRightCanCoderId;
+              case 2 -> backLeftCanCoderId;
+              case 3 -> backRightCanCoderId;
+              default -> 0;
+            });
+    absoluteEncoder
+        .getConfigurator()
+        .apply(
+            new CANcoderConfiguration()
+                .withMagnetSensor(
+                    new MagnetSensorConfigs()
+                        .withSensorDirection(
+                            turnInverted
+                                ? SensorDirectionValue.Clockwise_Positive
+                                : SensorDirectionValue.CounterClockwise_Positive)));
     driveEncoder = driveSpark.getEncoder();
-    turnEncoder = turnSpark.getAbsoluteEncoder();
+    turnEncoder = turnSpark.getEncoder();
     driveController = driveSpark.getClosedLoopController();
     turnController = turnSpark.getClosedLoopController();
 
     // Configure drive motor
-    var driveConfig = new SparkFlexConfig();
+    var driveConfig = new SparkMaxConfig();
     driveConfig
         .idleMode(IdleMode.kBrake)
         .smartCurrentLimit(driveMotorCurrentLimit)
@@ -141,14 +165,15 @@ public class ModuleIOSpark implements ModuleIO {
         .smartCurrentLimit(turnMotorCurrentLimit)
         .voltageCompensation(12.0);
     turnConfig
-        .absoluteEncoder
+        .encoder
         .inverted(turnEncoderInverted)
         .positionConversionFactor(turnEncoderPositionFactor)
         .velocityConversionFactor(turnEncoderVelocityFactor)
-        .averageDepth(2);
+        .uvwMeasurementPeriod(10)
+        .uvwAverageDepth(2);
     turnConfig
         .closedLoop
-        .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .positionWrappingEnabled(true)
         .positionWrappingInputRange(turnPIDMinInput, turnPIDMaxInput)
         .pidf(turnKp, 0.0, turnKd, 0.0);
@@ -244,5 +269,11 @@ public class ModuleIOSpark implements ModuleIO {
         MathUtil.inputModulus(
             rotation.plus(zeroRotation).getRadians(), turnPIDMinInput, turnPIDMaxInput);
     turnController.setReference(setpoint, ControlType.kPosition);
+  }
+
+  @Override
+  public void resetToAbsolute() {
+    Angle angle = absoluteEncoder.getAbsolutePosition().refresh().getValue();
+    tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(angle.in(Rotation)));
   }
 }
