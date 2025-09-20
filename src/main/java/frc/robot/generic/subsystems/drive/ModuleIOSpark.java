@@ -17,6 +17,7 @@ import static edu.wpi.first.units.Units.Rotation;
 import static frc.robot.generic.subsystems.drive.DriveConstants.*;
 import static frc.robot.generic.util.SparkUtil.*;
 
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -68,6 +69,7 @@ public class ModuleIOSpark implements ModuleIO {
   // Connection debouncers
   private final Debouncer driveConnectedDebounce = new Debouncer(0.5);
   private final Debouncer turnConnectedDebounce = new Debouncer(0.5);
+  private final Debouncer cancoderConnectedDebounce = new Debouncer(0.5);
 
   public ModuleIOSpark(int module) {
     zeroRotation =
@@ -227,6 +229,10 @@ public class ModuleIOSpark implements ModuleIO {
         (values) -> inputs.turnAppliedVolts = values[0] * values[1]);
     ifOk(turnSpark, turnSpark::getOutputCurrent, (value) -> inputs.turnCurrentAmps = value);
     inputs.turnConnected = turnConnectedDebounce.calculate(!sparkStickyFault);
+
+    // Update CANcoder connection
+    StatusCode cancoderStatus = absoluteEncoder.getAbsolutePosition().getStatus();
+    inputs.cancoderConnected = cancoderConnectedDebounce.calculate(cancoderStatus.isOK());
 
     // Update odometry inputs
     inputs.odometryTimestamps =
