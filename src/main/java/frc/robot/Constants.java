@@ -14,6 +14,8 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.RobotBase;
+import frc.robot.generic.util.RobotConfig;
+import lombok.Getter;
 
 /**
  * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
@@ -24,6 +26,7 @@ public final class Constants {
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
   public static final boolean tuningMode = false;
+  @Getter private static final Robot currentRobot = Robot.OUTREACH;
 
   public static enum Mode {
     /** Running on a real robot. */
@@ -34,5 +37,13 @@ public final class Constants {
 
     /** Replaying from a log file. */
     REPLAY
+  }
+
+  public enum Robot {
+    OUTREACH,
+    TESTBED,
+    CUSTOM_IMPL_1,
+    CUSTOM_IMPL_2;
+    public RobotConfig config;
   }
 }
