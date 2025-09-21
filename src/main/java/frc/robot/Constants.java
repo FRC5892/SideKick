@@ -16,6 +16,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.generic.util.RobotConfig;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
@@ -39,11 +40,12 @@ public final class Constants {
     REPLAY
   }
 
+  @RequiredArgsConstructor
   public enum Robot {
-    OUTREACH,
-    TESTBED,
-    CUSTOM_IMPL_1,
-    CUSTOM_IMPL_2;
-    public RobotConfig config;
+    OUTREACH(frc.robot.outReach.RobotContainer.config),
+    TESTBED(frc.robot.testbed.RobotContainer.config),
+    CUSTOM_IMPL_1(frc.robot.customImplementation1.RobotContainer.config),
+    CUSTOM_IMPL_2(frc.robot.customImplementation2.RobotContainer.config);
+    public final RobotConfig config;
   }
 }
