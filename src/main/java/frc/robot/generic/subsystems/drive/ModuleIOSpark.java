@@ -13,6 +13,7 @@
 
 package frc.robot.generic.subsystems.drive;
 
+import static edu.wpi.first.units.Units.Rotation;
 import static frc.robot.generic.subsystems.drive.DriveConstants.*;
 import static frc.robot.generic.util.SparkUtil.*;
 
@@ -45,9 +46,8 @@ import java.util.function.DoubleSupplier;
  * and CANcoder absolute encoder.
  *
  * <p>CHANGES: - Removed CANcoder debouncer - Added lastCancoderConnected boolean, written only in
- * resetToAbsolute() - updateInputs() simply reads lastCancoderConnected and writes it into
- * inputs.cancoderConnected - resetToAbsolute() obtains absolute position once, checks StatusCode,
- * and updates the cached boolean
+ * resetToAbsolute() - updateInputs() uses cached connection flag - resetToAbsolute() reads absolute
+ * position once, updates connection + encoder
  */
 public class ModuleIOSpark implements ModuleIO {
   private final Rotation2d zeroRotation;
@@ -85,6 +85,7 @@ public class ModuleIOSpark implements ModuleIO {
           case 3 -> backRightZeroRotation;
           default -> new Rotation2d();
         };
+
     driveSpark =
         new SparkMax(
             switch (module) {
@@ -95,6 +96,7 @@ public class ModuleIOSpark implements ModuleIO {
               default -> 0;
             },
             MotorType.kBrushless);
+
     turnSpark =
         new SparkMax(
             switch (module) {
@@ -105,6 +107,7 @@ public class ModuleIOSpark implements ModuleIO {
               default -> 0;
             },
             MotorType.kBrushless);
+
     absoluteEncoder =
         new CANcoder(
             switch (module) {
@@ -114,6 +117,7 @@ public class ModuleIOSpark implements ModuleIO {
               case 3 -> backRightCanCoderId;
               default -> 0;
             });
+
     absoluteEncoder
         .getConfigurator()
         .apply(
@@ -124,6 +128,7 @@ public class ModuleIOSpark implements ModuleIO {
                             turnInverted
                                 ? SensorDirectionValue.Clockwise_Positive
                                 : SensorDirectionValue.CounterClockwise_Positive)));
+
     driveEncoder = driveSpark.getEncoder();
     turnEncoder = turnSpark.getEncoder();
     driveController = driveSpark.getClosedLoopController();
@@ -154,6 +159,7 @@ public class ModuleIOSpark implements ModuleIO {
         .appliedOutputPeriodMs(20)
         .busVoltagePeriodMs(20)
         .outputCurrentPeriodMs(20);
+
     tryUntilOk(
         driveSpark,
         5,
@@ -191,6 +197,7 @@ public class ModuleIOSpark implements ModuleIO {
         .appliedOutputPeriodMs(20)
         .busVoltagePeriodMs(20)
         .outputCurrentPeriodMs(20);
+
     tryUntilOk(
         turnSpark,
         5,
@@ -210,13 +217,13 @@ public class ModuleIOSpark implements ModuleIO {
   public void updateInputs(ModuleIOInputs inputs) {
     // Update drive inputs
     sparkStickyFault = false;
-    ifOk(driveSpark, driveEncoder::getPosition, (value) -> inputs.drivePositionRad = value);
-    ifOk(driveSpark, driveEncoder::getVelocity, (value) -> inputs.driveVelocityRadPerSec = value);
+    ifOk(driveSpark, driveEncoder::getPosition, value -> inputs.drivePositionRad = value);
+    ifOk(driveSpark, driveEncoder::getVelocity, value -> inputs.driveVelocityRadPerSec = value);
     ifOk(
         driveSpark,
         new DoubleSupplier[] {driveSpark::getAppliedOutput, driveSpark::getBusVoltage},
-        (values) -> inputs.driveAppliedVolts = values[0] * values[1]);
-    ifOk(driveSpark, driveSpark::getOutputCurrent, (value) -> inputs.driveCurrentAmps = value);
+        values -> inputs.driveAppliedVolts = values[0] * values[1]);
+    ifOk(driveSpark, driveSpark::getOutputCurrent, value -> inputs.driveCurrentAmps = value);
     inputs.driveConnected = driveConnectedDebounce.calculate(!sparkStickyFault);
 
     // Update turn inputs
@@ -224,27 +231,27 @@ public class ModuleIOSpark implements ModuleIO {
     ifOk(
         turnSpark,
         turnEncoder::getPosition,
-        (value) -> inputs.turnPosition = new Rotation2d(value).minus(zeroRotation));
-    ifOk(turnSpark, turnEncoder::getVelocity, (value) -> inputs.turnVelocityRadPerSec = value);
+        value -> inputs.turnPosition = new Rotation2d(value).minus(zeroRotation));
+    ifOk(turnSpark, turnEncoder::getVelocity, value -> inputs.turnVelocityRadPerSec = value);
     ifOk(
         turnSpark,
         new DoubleSupplier[] {turnSpark::getAppliedOutput, turnSpark::getBusVoltage},
-        (values) -> inputs.turnAppliedVolts = values[0] * values[1]);
-    ifOk(turnSpark, turnSpark::getOutputCurrent, (value) -> inputs.turnCurrentAmps = value);
+        values -> inputs.turnAppliedVolts = values[0] * values[1]);
+    ifOk(turnSpark, turnSpark::getOutputCurrent, value -> inputs.turnCurrentAmps = value);
     inputs.turnConnected = turnConnectedDebounce.calculate(!sparkStickyFault);
 
     // Use cached CANcoder connection status (written by resetToAbsolute)
     inputs.cancoderConnected = lastCancoderConnected;
 
     // Update odometry inputs
-    inputs.odometryTimestamps =
-        timestampQueue.stream().mapToDouble((Double value) -> value).toArray();
+    inputs.odometryTimestamps = timestampQueue.stream().mapToDouble(Double::doubleValue).toArray();
     inputs.odometryDrivePositionsRad =
-        drivePositionQueue.stream().mapToDouble((Double value) -> value).toArray();
+        drivePositionQueue.stream().mapToDouble(Double::doubleValue).toArray();
     inputs.odometryTurnPositions =
         turnPositionQueue.stream()
-            .map((Double value) -> new Rotation2d(value).minus(zeroRotation))
+            .map(value -> new Rotation2d(value).minus(zeroRotation))
             .toArray(Rotation2d[]::new);
+
     timestampQueue.clear();
     drivePositionQueue.clear();
     turnPositionQueue.clear();
@@ -281,16 +288,12 @@ public class ModuleIOSpark implements ModuleIO {
 
   @Override
   public void resetToAbsolute() {
-    /*
-     * Obtain a single absolute position reading, check its StatusCode, then
-     * update the cached boolean and (if OK) use the value to set the turn encoder.
-     */
     var posSignal = absoluteEncoder.getAbsolutePosition();
-    StatusCode status = posSignal.getStatus();
+    StatusCode status = posSignal.refresh().getStatus(); // refresh once
     lastCancoderConnected = status.isOK();
 
     if (lastCancoderConnected) {
-      double rotations = posSignal.getValueAsDouble(); // rotations
+      double rotations = posSignal.getValue().in(Rotation); // in rotations (0–1 per turn)
       tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(rotations));
     }
   }
