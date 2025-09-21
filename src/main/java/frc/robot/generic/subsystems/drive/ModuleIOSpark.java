@@ -80,6 +80,7 @@ public class ModuleIOSpark implements ModuleIO {
           case 3 -> backRightZeroRotation;
           default -> new Rotation2d();
         };
+
     driveSpark =
         new SparkMax(
             switch (module) {
@@ -90,6 +91,7 @@ public class ModuleIOSpark implements ModuleIO {
               default -> 0;
             },
             MotorType.kBrushless);
+
     turnSpark =
         new SparkMax(
             switch (module) {
@@ -100,6 +102,7 @@ public class ModuleIOSpark implements ModuleIO {
               default -> 0;
             },
             MotorType.kBrushless);
+
     absoluteEncoder =
         new CANcoder(
             switch (module) {
@@ -109,6 +112,7 @@ public class ModuleIOSpark implements ModuleIO {
               case 3 -> backRightCanCoderId;
               default -> 0;
             });
+
     absoluteEncoder
         .getConfigurator()
         .apply(
@@ -119,6 +123,7 @@ public class ModuleIOSpark implements ModuleIO {
                             turnInverted
                                 ? SensorDirectionValue.Clockwise_Positive
                                 : SensorDirectionValue.CounterClockwise_Positive)));
+
     driveEncoder = driveSpark.getEncoder();
     turnEncoder = turnSpark.getEncoder();
     driveController = driveSpark.getClosedLoopController();
@@ -139,9 +144,7 @@ public class ModuleIOSpark implements ModuleIO {
     driveConfig
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .pidf(
-            driveKp, 0.0,
-            driveKd, 0.0);
+        .pidf(driveKp, 0.0, driveKd, 0.0);
     driveConfig
         .signals
         .primaryEncoderPositionAlwaysOn(true)
@@ -231,7 +234,7 @@ public class ModuleIOSpark implements ModuleIO {
     inputs.turnConnected = turnConnectedDebounce.calculate(!sparkStickyFault);
 
     // Update CANcoder connection
-    StatusCode cancoderStatus = absoluteEncoder.getAbsolutePosition().getStatus();
+    StatusCode cancoderStatus = absoluteEncoder.getAbsolutePosition().refresh().getStatus();
     inputs.cancoderConnected = cancoderConnectedDebounce.calculate(cancoderStatus.isOK());
 
     // Update odometry inputs
@@ -279,7 +282,10 @@ public class ModuleIOSpark implements ModuleIO {
 
   @Override
   public void resetToAbsolute() {
-    Angle angle = absoluteEncoder.getAbsolutePosition().refresh().getValue();
-    tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(angle.in(Rotation)));
+    StatusCode status = absoluteEncoder.getAbsolutePosition().refresh().getStatus();
+    if (status.isOK()) {
+      Angle angle = absoluteEncoder.getAbsolutePosition().getValue();
+      tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(angle.in(Rotation)));
+    }
   }
 }
