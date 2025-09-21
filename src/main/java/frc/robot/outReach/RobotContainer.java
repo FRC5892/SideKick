@@ -23,6 +23,8 @@ import frc.robot.Constants;
 import frc.robot.generic.Robot;
 import frc.robot.generic.commands.DriveCommands;
 import frc.robot.generic.subsystems.drive.Drive;
+import frc.robot.generic.util.AbstractRobotContainer;
+import frc.robot.generic.util.RobotConfig;
 import frc.robot.generic.util.SwerveBuilder;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -32,7 +34,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
  * subsystems, commands, and button mappings) should be declared here.
  */
-public class RobotContainer {
+public class RobotContainer implements AbstractRobotContainer {
+  public static RobotConfig config = RobotConfig.defaultCommandBased(RobotContainer::new);
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
