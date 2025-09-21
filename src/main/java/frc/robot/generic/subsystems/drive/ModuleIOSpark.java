@@ -13,7 +13,6 @@
 
 package frc.robot.generic.subsystems.drive;
 
-import static edu.wpi.first.units.Units.Rotation;
 import static frc.robot.generic.subsystems.drive.DriveConstants.*;
 import static frc.robot.generic.util.SparkUtil.*;
 
@@ -38,13 +37,17 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.measure.Angle;
 import java.util.Queue;
 import java.util.function.DoubleSupplier;
 
 /**
  * Module IO implementation for Spark Flex drive motor controller, Spark Max turn motor controller,
- * and duty cycle absolute encoder.
+ * and CANcoder absolute encoder.
+ *
+ * <p>CHANGES: - Removed CANcoder debouncer - Added lastCancoderConnected boolean, written only in
+ * resetToAbsolute() - updateInputs() simply reads lastCancoderConnected and writes it into
+ * inputs.cancoderConnected - resetToAbsolute() obtains absolute position once, checks StatusCode,
+ * and updates the cached boolean
  */
 public class ModuleIOSpark implements ModuleIO {
   private final Rotation2d zeroRotation;
@@ -66,10 +69,12 @@ public class ModuleIOSpark implements ModuleIO {
 
   private final CANcoder absoluteEncoder;
 
-  // Connection debouncers
+  // Connection debouncers for motors only
   private final Debouncer driveConnectedDebounce = new Debouncer(0.5);
   private final Debouncer turnConnectedDebounce = new Debouncer(0.5);
-  private final Debouncer cancoderConnectedDebounce = new Debouncer(0.5);
+
+  // Cached cancoder status — updated only in resetToAbsolute()
+  private boolean lastCancoderConnected = false;
 
   public ModuleIOSpark(int module) {
     zeroRotation =
@@ -80,7 +85,6 @@ public class ModuleIOSpark implements ModuleIO {
           case 3 -> backRightZeroRotation;
           default -> new Rotation2d();
         };
-
     driveSpark =
         new SparkMax(
             switch (module) {
@@ -91,7 +95,6 @@ public class ModuleIOSpark implements ModuleIO {
               default -> 0;
             },
             MotorType.kBrushless);
-
     turnSpark =
         new SparkMax(
             switch (module) {
@@ -102,7 +105,6 @@ public class ModuleIOSpark implements ModuleIO {
               default -> 0;
             },
             MotorType.kBrushless);
-
     absoluteEncoder =
         new CANcoder(
             switch (module) {
@@ -112,7 +114,6 @@ public class ModuleIOSpark implements ModuleIO {
               case 3 -> backRightCanCoderId;
               default -> 0;
             });
-
     absoluteEncoder
         .getConfigurator()
         .apply(
@@ -123,7 +124,6 @@ public class ModuleIOSpark implements ModuleIO {
                             turnInverted
                                 ? SensorDirectionValue.Clockwise_Positive
                                 : SensorDirectionValue.CounterClockwise_Positive)));
-
     driveEncoder = driveSpark.getEncoder();
     turnEncoder = turnSpark.getEncoder();
     driveController = driveSpark.getClosedLoopController();
@@ -233,9 +233,8 @@ public class ModuleIOSpark implements ModuleIO {
     ifOk(turnSpark, turnSpark::getOutputCurrent, (value) -> inputs.turnCurrentAmps = value);
     inputs.turnConnected = turnConnectedDebounce.calculate(!sparkStickyFault);
 
-    // Update CANcoder connection
-    StatusCode cancoderStatus = absoluteEncoder.getAbsolutePosition().refresh().getStatus();
-    inputs.cancoderConnected = cancoderConnectedDebounce.calculate(cancoderStatus.isOK());
+    // Use cached CANcoder connection status (written by resetToAbsolute)
+    inputs.cancoderConnected = lastCancoderConnected;
 
     // Update odometry inputs
     inputs.odometryTimestamps =
@@ -282,10 +281,17 @@ public class ModuleIOSpark implements ModuleIO {
 
   @Override
   public void resetToAbsolute() {
-    StatusCode status = absoluteEncoder.getAbsolutePosition().refresh().getStatus();
-    if (status.isOK()) {
-      Angle angle = absoluteEncoder.getAbsolutePosition().getValue();
-      tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(angle.in(Rotation)));
+    /*
+     * Obtain a single absolute position reading, check its StatusCode, then
+     * update the cached boolean and (if OK) use the value to set the turn encoder.
+     */
+    var posSignal = absoluteEncoder.getAbsolutePosition();
+    StatusCode status = posSignal.getStatus();
+    lastCancoderConnected = status.isOK();
+
+    if (lastCancoderConnected) {
+      double angle = posSignal.getValueAsDouble(); // radians
+      tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(angle));
     }
   }
 }
