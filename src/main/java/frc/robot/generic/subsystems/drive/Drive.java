@@ -80,6 +80,12 @@ public class Drive extends SubsystemBase {
       ModuleIO brModuleIO) {
     this.gyroIO = gyroIO;
     
+    modules[0] = new Module(flModuleIO, 0);
+    modules[1] = new Module(frModuleIO, 1);
+    modules[2] = new Module(blModuleIO, 2);
+    modules[3] = new Module(brModuleIO, 3);
+
+    resetModulesToAbsolute();
 
     // Usage reporting for swerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
