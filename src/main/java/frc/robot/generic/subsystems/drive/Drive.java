@@ -40,6 +40,7 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
@@ -78,10 +79,7 @@ public class Drive extends SubsystemBase {
       ModuleIO blModuleIO,
       ModuleIO brModuleIO) {
     this.gyroIO = gyroIO;
-    modules[0] = new Module(flModuleIO, 0);
-    modules[1] = new Module(frModuleIO, 1);
-    modules[2] = new Module(blModuleIO, 2);
-    modules[3] = new Module(brModuleIO, 3);
+    
 
     // Usage reporting for swerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
@@ -319,5 +317,15 @@ public class Drive extends SubsystemBase {
   /** Returns the maximum angular speed in radians per sec. */
   public double getMaxAngularSpeedRadPerSec() {
     return maxSpeedMetersPerSec / driveBaseRadius;
+  }
+  // Reset ModuleIO to absolute position based on module array
+  // Made this a method for implementation into the SwerveBuilder class (that's also why it returns command not void)
+  public Command resetModulesToAbsolute(){
+    // Added getter as the code was a bit more readable than just manually reseting each instance
+    return Commands.runOnce(() ->{
+      for(Module module : modules) {
+        module.getModuleIO().resetToAbsolute();
+      }
+    }, this);
   }
 }
