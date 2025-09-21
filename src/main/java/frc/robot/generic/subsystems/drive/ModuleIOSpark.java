@@ -289,7 +289,7 @@ public class ModuleIOSpark implements ModuleIO {
   @Override
   public void resetToAbsolute() {
     var posSignal = absoluteEncoder.getAbsolutePosition();
-    StatusCode status = posSignal.refresh().getStatus(); // refresh once
+    StatusCode status = posSignal.getStatus(); // refresh once
     lastCancoderConnected = status.isOK();
 
     if (lastCancoderConnected) {
