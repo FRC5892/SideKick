@@ -290,8 +290,8 @@ public class ModuleIOSpark implements ModuleIO {
     lastCancoderConnected = status.isOK();
 
     if (lastCancoderConnected) {
-      double angle = posSignal.getValueAsDouble(); // radians
-      tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(angle));
+      double rotations = posSignal.getValueAsDouble(); // rotations
+      tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(rotations));
     }
   }
 }
