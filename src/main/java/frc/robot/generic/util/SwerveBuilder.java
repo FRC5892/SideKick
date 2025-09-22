@@ -75,6 +75,7 @@ public class SwerveBuilder {
                         drive.setPose(
                             new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
                     drive)
+                    .andThen(drive.resetModulesToAbsolute()) // Resets modules when button pressed
                 .ignoringDisable(true));
     return drive;
   }
