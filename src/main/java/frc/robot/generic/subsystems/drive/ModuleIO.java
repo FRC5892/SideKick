@@ -19,18 +19,24 @@ import org.littletonrobotics.junction.AutoLog;
 public interface ModuleIO {
   @AutoLog
   public static class ModuleIOInputs {
-    public boolean driveConnected = false;
+    // Drive
     public double drivePositionRad = 0.0;
     public double driveVelocityRadPerSec = 0.0;
     public double driveAppliedVolts = 0.0;
     public double driveCurrentAmps = 0.0;
+    public boolean driveConnected = false;
 
-    public boolean turnConnected = false;
+    // Turn
     public Rotation2d turnPosition = new Rotation2d();
     public double turnVelocityRadPerSec = 0.0;
     public double turnAppliedVolts = 0.0;
     public double turnCurrentAmps = 0.0;
+    public boolean turnConnected = false;
 
+    // Cancoder
+    public boolean cancoderConnected = false;
+
+    // Odometry
     public double[] odometryTimestamps = new double[] {};
     public double[] odometryDrivePositionsRad = new double[] {};
     public Rotation2d[] odometryTurnPositions = new Rotation2d[] {};
@@ -39,17 +45,18 @@ public interface ModuleIO {
   /** Updates the set of loggable inputs. */
   public default void updateInputs(ModuleIOInputs inputs) {}
 
-  /** Run the drive motor at the specified open loop value. */
+  /** Run the drive motor at the specified voltage. */
   public default void setDriveOpenLoop(double output) {}
 
-  /** Run the turn motor at the specified open loop value. */
+  /** Run the turn motor at the specified voltage. */
   public default void setTurnOpenLoop(double output) {}
 
   /** Run the drive motor at the specified velocity. */
   public default void setDriveVelocity(double velocityRadPerSec) {}
 
-  /** Run the turn motor to the specified rotation. */
-  public default void setTurnPosition(Rotation2d rotation) {}
+  /** Run the turn motor to the specified angle. */
+  public default void setTurnPosition(Rotation2d angle) {}
 
+  /** Reset the turn motor encoder to the cancoder absolute position. */
   public default void resetToAbsolute() {}
 }
