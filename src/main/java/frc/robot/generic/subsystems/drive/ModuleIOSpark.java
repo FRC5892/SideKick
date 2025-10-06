@@ -177,7 +177,7 @@ public class ModuleIOSpark implements ModuleIO {
         .voltageCompensation(12.0);
     turnConfig
         .encoder
-        .inverted(turnEncoderInverted)
+        // .inverted(turnEncoderInverted)
         .positionConversionFactor(turnEncoderPositionFactor)
         .velocityConversionFactor(turnEncoderVelocityFactor)
         .uvwMeasurementPeriod(10)
@@ -211,6 +211,8 @@ public class ModuleIOSpark implements ModuleIO {
         SparkOdometryThread.getInstance().registerSignal(driveSpark, driveEncoder::getPosition);
     turnPositionQueue =
         SparkOdometryThread.getInstance().registerSignal(turnSpark, turnEncoder::getPosition);
+
+    resetToAbsolute();
   }
 
   @Override
@@ -291,7 +293,6 @@ public class ModuleIOSpark implements ModuleIO {
     var posSignal = absoluteEncoder.getAbsolutePosition();
     StatusCode status = posSignal.getStatus(); // refresh once
     lastCancoderConnected = status.isOK();
-
     if (lastCancoderConnected) {
       double rotations = posSignal.getValue().in(Rotation); // in rotations (0–1 per turn)
       tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(rotations));
