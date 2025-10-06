@@ -133,4 +133,8 @@ public class Module {
   public double getFFCharacterizationVelocity() {
     return inputs.driveVelocityRadPerSec;
   }
+  // Gets moduleio instance
+  public ModuleIO getModuleIO(){ 
+    return io;
+  }
 }
