@@ -13,7 +13,6 @@
 
 package frc.robot.generic.subsystems.drive;
 
-import static edu.wpi.first.units.Units.Radian;
 import static frc.robot.generic.subsystems.drive.DriveConstants.*;
 import static frc.robot.generic.util.SparkUtil.*;
 
@@ -129,9 +128,9 @@ public class ModuleIOSpark implements ModuleIO {
                 .withMagnetSensor(
                     new MagnetSensorConfigs()
                         .withSensorDirection(
-                            !turnInverted
-                                ? SensorDirectionValue.Clockwise_Positive
-                                : SensorDirectionValue.CounterClockwise_Positive)));
+                            module == 0 || module == 2
+                                ? SensorDirectionValue.CounterClockwise_Positive
+                                : SensorDirectionValue.Clockwise_Positive)));
 
     driveEncoder = driveSpark.getEncoder();
     turnEncoder = turnSpark.getEncoder();
@@ -299,8 +298,16 @@ public class ModuleIOSpark implements ModuleIO {
     StatusCode status = posSignal.getStatus(); // refresh once
     lastCancoderConnected = status.isOK();
     if (lastCancoderConnected) {
-      double rotation = posSignal.getValue().in(Radian); // in rotations (0–1 per turn)
-      tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(rotation));
+      // Get absolute position in radians directly
+
+      // Apply mechanical zero offset and wrap to [-π, π]
+      double adjustedRadians =
+          -new Rotation2d(posSignal.getValue()).plus(zeroRotation).getRadians();
+
+      Logger.recordOutput("Drive/Module" + module + "/EncoderPosition", adjustedRadians);
+
+      // Safely set the Spark MAX relative encoder
+      tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(adjustedRadians));
     }
   }
 }
