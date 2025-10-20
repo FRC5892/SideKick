@@ -13,7 +13,7 @@
 
 package frc.robot.generic.subsystems.drive;
 
-import static edu.wpi.first.units.Units.Rotation;
+import static edu.wpi.first.units.Units.Radian;
 import static frc.robot.generic.subsystems.drive.DriveConstants.*;
 import static frc.robot.generic.util.SparkUtil.*;
 
@@ -42,6 +42,7 @@ import edu.wpi.first.units.AngleUnit;
 
 import java.util.Queue;
 import java.util.function.DoubleSupplier;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Module IO implementation for Spark Flex drive motor controller, Spark Max turn motor controller,
@@ -78,7 +79,10 @@ public class ModuleIOSpark implements ModuleIO {
   // Cached cancoder status — updated only in resetToAbsolute()
   private boolean lastCancoderConnected = false;
 
+  private final int module;
+
   public ModuleIOSpark(int module) {
+    this.module = module;
     zeroRotation =
         switch (module) {
           case 0 -> frontLeftZeroRotation;
@@ -127,7 +131,7 @@ public class ModuleIOSpark implements ModuleIO {
                 .withMagnetSensor(
                     new MagnetSensorConfigs()
                         .withSensorDirection(
-                            turnInverted
+                            !turnInverted
                                 ? SensorDirectionValue.Clockwise_Positive
                                 : SensorDirectionValue.CounterClockwise_Positive)));
 
@@ -287,6 +291,7 @@ public class ModuleIOSpark implements ModuleIO {
     double setpoint =
         MathUtil.inputModulus(
             rotation.plus(zeroRotation).getRadians(), turnPIDMinInput, turnPIDMaxInput);
+    Logger.recordOutput("Drive/Module" + module + "/turn setpoint", setpoint);
     turnController.setReference(setpoint, ControlType.kPosition);
   }
 
@@ -309,6 +314,7 @@ public void resetToAbsolute() {
 
         // Safely set the Spark MAX relative encoder
         tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(adjustedRadians));
+
     }
   }
 }
