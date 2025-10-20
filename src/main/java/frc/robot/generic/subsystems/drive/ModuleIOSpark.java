@@ -13,7 +13,7 @@
 
 package frc.robot.generic.subsystems.drive;
 
-import static edu.wpi.first.units.Units.Rotation;
+import static edu.wpi.first.units.Units.Radian;
 import static frc.robot.generic.subsystems.drive.DriveConstants.*;
 import static frc.robot.generic.util.SparkUtil.*;
 
@@ -40,6 +40,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.Queue;
 import java.util.function.DoubleSupplier;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Module IO implementation for Spark Flex drive motor controller, Spark Max turn motor controller,
@@ -76,7 +77,10 @@ public class ModuleIOSpark implements ModuleIO {
   // Cached cancoder status — updated only in resetToAbsolute()
   private boolean lastCancoderConnected = false;
 
+  private final int module;
+
   public ModuleIOSpark(int module) {
+    this.module = module;
     zeroRotation =
         switch (module) {
           case 0 -> frontLeftZeroRotation;
@@ -125,7 +129,7 @@ public class ModuleIOSpark implements ModuleIO {
                 .withMagnetSensor(
                     new MagnetSensorConfigs()
                         .withSensorDirection(
-                            turnInverted
+                            !turnInverted
                                 ? SensorDirectionValue.Clockwise_Positive
                                 : SensorDirectionValue.CounterClockwise_Positive)));
 
@@ -285,6 +289,7 @@ public class ModuleIOSpark implements ModuleIO {
     double setpoint =
         MathUtil.inputModulus(
             rotation.plus(zeroRotation).getRadians(), turnPIDMinInput, turnPIDMaxInput);
+    Logger.recordOutput("Drive/Module" + module + "/turn setpoint", setpoint);
     turnController.setReference(setpoint, ControlType.kPosition);
   }
 
@@ -294,8 +299,8 @@ public class ModuleIOSpark implements ModuleIO {
     StatusCode status = posSignal.getStatus(); // refresh once
     lastCancoderConnected = status.isOK();
     if (lastCancoderConnected) {
-      double rotations = posSignal.getValue().in(Rotation); // in rotations (0–1 per turn)
-      tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(rotations));
+      double rotation = posSignal.getValue().in(Radian); // in rotations (0–1 per turn)
+      tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(rotation));
     }
   }
 }
