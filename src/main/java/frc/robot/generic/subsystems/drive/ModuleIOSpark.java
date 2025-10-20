@@ -38,6 +38,8 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.AngleUnit;
+
 import java.util.Queue;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
@@ -294,13 +296,25 @@ public class ModuleIOSpark implements ModuleIO {
   }
 
   @Override
-  public void resetToAbsolute() {
+public void resetToAbsolute() {
     var posSignal = absoluteEncoder.getAbsolutePosition();
-    StatusCode status = posSignal.getStatus(); // refresh once
+    StatusCode status = posSignal.getStatus(); // Refresh once
     lastCancoderConnected = status.isOK();
+
     if (lastCancoderConnected) {
-      double rotation = posSignal.getValue().in(Radian); // in rotations (0–1 per turn)
-      tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(rotation));
+        // Get absolute position in radians directly
+        double absoluteRadians = posSignal.getValue().in(AngleUnit.Radians);
+
+        // Apply mechanical zero offset and wrap to [-π, π]
+        double adjustedRadians = MathUtil.inputModulus(
+            absoluteRadians - zeroRotation.getRadians(),
+            -Math.PI,
+            Math.PI
+        );
+
+        // Safely set the Spark MAX relative encoder
+        tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(adjustedRadians));
+
     }
   }
 }
