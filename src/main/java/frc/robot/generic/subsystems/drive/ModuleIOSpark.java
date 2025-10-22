@@ -37,19 +37,17 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.AngleUnit;
-
 import java.util.Queue;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 /**
  * Module IO implementation for Spark Flex drive motor controller, Spark Max turn motor controller,
- * and CANcoder absolute encoder.
+ * and CANcoder absolute encoder. Adapted for NEO motors (SparkMax) + CTRE CANCoder absolute.
  *
- * <p>CHANGES: - Removed CANcoder debouncer - Added lastCancoderConnected boolean, written only in
- * resetToAbsolute() - updateInputs() uses cached connection flag - resetToAbsolute() reads absolute
- * position once, updates connection + encoder
+ * <p>CHANGES: - Ensures consistent signed math between CANCoder and Spark relative encoder - Uses
+ * Rotation2d.fromRotations(...) to convert CANCoder rotations to radians - Subtracts zeroRotation
+ * (not add) when syncing - Wraps to [-PI, PI]
  */
 public class ModuleIOSpark implements ModuleIO {
   private final Rotation2d zeroRotation;
@@ -123,6 +121,7 @@ public class ModuleIOSpark implements ModuleIO {
               default -> 0;
             });
 
+    // Configure the CANCoder sensor direction per module (matches what you had before)
     absoluteEncoder
         .getConfigurator()
         .apply(
@@ -182,7 +181,6 @@ public class ModuleIOSpark implements ModuleIO {
         .voltageCompensation(12.0);
     turnConfig
         .encoder
-        // .inverted(turnEncoderInverted)
         .positionConversionFactor(turnEncoderPositionFactor)
         .velocityConversionFactor(turnEncoderVelocityFactor)
         .uvwMeasurementPeriod(10)
@@ -217,6 +215,7 @@ public class ModuleIOSpark implements ModuleIO {
     turnPositionQueue =
         SparkOdometryThread.getInstance().registerSignal(turnSpark, turnEncoder::getPosition);
 
+    // Sync at startup
     resetToAbsolute();
   }
 
@@ -289,28 +288,33 @@ public class ModuleIOSpark implements ModuleIO {
   public void setTurnPosition(Rotation2d rotation) {
     double setpoint =
         MathUtil.inputModulus(
-            rotation.plus(zeroRotation).getRadians(), turnPIDMinInput, turnPIDMaxInput);
+            rotation.plus(zeroRotation).getRadians(), -Math.PI, Math.PI);
     Logger.recordOutput("Drive/Module" + module + "/turn setpoint", setpoint);
     turnController.setReference(setpoint, ControlType.kPosition);
   }
 
   @Override
-public void resetToAbsolute() {
+  public void resetToAbsolute() {
     var posSignal = absoluteEncoder.getAbsolutePosition();
-    StatusCode status = posSignal.getStatus(); // Refresh once
+    posSignal.refresh(); // request a fresh reading
+    StatusCode status = posSignal.getStatus();
     lastCancoderConnected = status.isOK();
 
     if (lastCancoderConnected) {
-      // Get absolute position in radians directly
+      // Convert absolute position (rotations: 0-1) to radians using Rotation2d helper
+      double absoluteRadians = Rotation2d.fromRotations(posSignal.getValue()).getRadians();
 
-      // Apply mechanical zero offset and wrap to [-π, π]
-      double adjustedRadians =
-          -new Rotation2d(posSignal.getValue()).plus(zeroRotation).getRadians();
+      // Subtract module zero offset (zeroRotation) so "0 rad" == vehicle forward
+      double adjustedRadians = MathUtil.inputModulus(absoluteRadians - zeroRotation.getRadians(), -Math.PI, Math.PI);
 
-      Logger.recordOutput("Drive/Module" + module + "/EncoderPosition", adjustedRadians);
+      Logger.recordOutput("Drive/Module" + module + "/AbsoluteRadians", absoluteRadians);
+      Logger.recordOutput("Drive/Module" + module + "/AdjustedRadians", adjustedRadians);
+      Logger.recordOutput("Drive/Module" + module + "/EncoderDegrees", Math.toDegrees(adjustedRadians));
 
-      // Safely set the Spark MAX relative encoder
+      // Safely set the Spark MAX relative encoder to the adjusted angle
       tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(adjustedRadians));
+    } else {
+      Logger.recordOutput("Drive/Module" + module + "/EncoderStatus", "CANCODER_DISCONNECTED");
     }
   }
 }
