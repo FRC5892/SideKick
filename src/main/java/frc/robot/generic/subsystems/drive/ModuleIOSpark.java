@@ -268,7 +268,7 @@ public class ModuleIOSpark implements ModuleIO {
     lastCancoderConnected = status.isOK();
 
     if (lastCancoderConnected) {
-      double absoluteRadians = Rotation2d.fromRotations(posSignal.getValue().getRotations()).getRadians();
+      double absoluteRadians = Rotation2d.fromRotations(posSignal.getValueAsDouble()).getRadians();
       double adjustedRadians =
           MathUtil.inputModulus(
               absoluteRadians - zeroRotation.getRadians(), -Math.PI, Math.PI);
