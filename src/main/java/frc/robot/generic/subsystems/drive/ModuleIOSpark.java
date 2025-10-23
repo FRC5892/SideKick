@@ -37,8 +37,6 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.AngleUnit;
-
 import java.util.Queue;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
@@ -122,17 +120,19 @@ public class ModuleIOSpark implements ModuleIO {
               case 3 -> backRightCanCoderId;
               default -> 0;
             });
-
+    var direction =
+        switch (module) {
+          case 0 -> frontLeftTurnDirection;
+          case 1 -> frontRightTurnDirection;
+          case 2 -> backLeftTurnDirection;
+          case 3 -> backRightTurnDirection;
+          default -> SensorDirectionValue.CounterClockwise_Positive;
+        };
     absoluteEncoder
         .getConfigurator()
         .apply(
             new CANcoderConfiguration()
-                .withMagnetSensor(
-                    new MagnetSensorConfigs()
-                        .withSensorDirection(
-                            module == 0 || module == 2
-                                ? SensorDirectionValue.CounterClockwise_Positive
-                                : SensorDirectionValue.Clockwise_Positive)));
+                .withMagnetSensor(new MagnetSensorConfigs().withSensorDirection(direction)));
 
     driveEncoder = driveSpark.getEncoder();
     turnEncoder = turnSpark.getEncoder();
@@ -295,7 +295,7 @@ public class ModuleIOSpark implements ModuleIO {
   }
 
   @Override
-public void resetToAbsolute() {
+  public void resetToAbsolute() {
     var posSignal = absoluteEncoder.getAbsolutePosition();
     StatusCode status = posSignal.getStatus(); // Refresh once
     lastCancoderConnected = status.isOK();
@@ -310,7 +310,10 @@ public void resetToAbsolute() {
       Logger.recordOutput("Drive/Module" + module + "/EncoderPosition", adjustedRadians);
 
       // Safely set the Spark MAX relative encoder
-      tryUntilOk(turnSpark, 5, () -> turnEncoder.setPosition(adjustedRadians));
+      tryUntilOk(
+          turnSpark,
+          5,
+          () -> turnEncoder.setPosition(MathUtil.inputModulus(adjustedRadians, 0, 2 * Math.PI)));
     }
   }
 }

@@ -13,6 +13,7 @@
 
 package frc.robot.generic.subsystems.drive;
 
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -35,10 +36,10 @@ public class DriveConstants {
       };
 
   // Zeroed rotation values for each module, see setup instructions
-  public static final Rotation2d frontLeftZeroRotation = new Rotation2d(2.361231803894043);
-  public static final Rotation2d frontRightZeroRotation = new Rotation2d(2.7333309650421143);
-  public static final Rotation2d backLeftZeroRotation = new Rotation2d(0.3042394816875458);
-  public static final Rotation2d backRightZeroRotation = new Rotation2d(-2.407032012939453);
+  public static final Rotation2d frontLeftZeroRotation = new Rotation2d(-0.7853181997882291);
+  public static final Rotation2d frontRightZeroRotation = new Rotation2d(-1.9785268942462368);
+  public static final Rotation2d backLeftZeroRotation = new Rotation2d(1.2279650529278354);
+  public static final Rotation2d backRightZeroRotation = new Rotation2d(-0.8600462118731901);
 
   // Device CAN IDs
   public static final int pigeonCanId = 13;
@@ -92,6 +93,15 @@ public class DriveConstants {
       (2 * Math.PI) / 12.8; // Rotations -> Radians
   public static final double turnEncoderVelocityFactor =
       ((2 * Math.PI) / 60.0) / 12.8; // RPM -> Rad/Sec
+
+  public static final SensorDirectionValue frontLeftTurnDirection =
+      SensorDirectionValue.Clockwise_Positive;
+  public static final SensorDirectionValue frontRightTurnDirection =
+      SensorDirectionValue.Clockwise_Positive;
+  public static final SensorDirectionValue backLeftTurnDirection =
+      SensorDirectionValue.Clockwise_Positive;
+  public static final SensorDirectionValue backRightTurnDirection =
+      SensorDirectionValue.Clockwise_Positive;
 
   // Turn PID configuration
   public static final double turnKp = 0.4;
