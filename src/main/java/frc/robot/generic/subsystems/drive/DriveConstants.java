@@ -13,6 +13,8 @@
 
 package frc.robot.generic.subsystems.drive;
 
+import static edu.wpi.first.units.Units.Degrees;
+
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
@@ -36,10 +38,16 @@ public class DriveConstants {
       };
 
   // Zeroed rotation values for each module, see setup instructions
-  public static final Rotation2d frontLeftZeroRotation = new Rotation2d(-0.7853181997882291);
-  public static final Rotation2d frontRightZeroRotation = new Rotation2d(-1.9785268942462368);
-  public static final Rotation2d backLeftZeroRotation = new Rotation2d(1.2279650529278354);
-  public static final Rotation2d backRightZeroRotation = new Rotation2d(-0.8600462118731901);
+  public static final Rotation2d frontLeftZeroRotation =
+      new Rotation2d(-0.7853181997882291).minus(new Rotation2d(Degrees.of(16 + 2)));
+  public static final Rotation2d frontRightZeroRotation =
+      new Rotation2d(-1.9785268942462368).minus(new Rotation2d(Degrees.of(-7 - 2)));
+  public static final Rotation2d backLeftZeroRotation =
+      new Rotation2d(1.2279650529278354)
+          .minus(new Rotation2d(Degrees.of(-5)))
+          .minus(Rotation2d.k180deg);
+  public static final Rotation2d backRightZeroRotation =
+      new Rotation2d(-0.8600462118731901).minus(new Rotation2d(Degrees.of(17.5 + 2)));
 
   // Device CAN IDs
   public static final int pigeonCanId = 13;
