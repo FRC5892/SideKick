@@ -38,14 +38,15 @@ public class DriveConstants {
       };
 
   // Zeroed rotation values for each module, see setup instructions
+  // CW = +
   public static final Rotation2d frontLeftZeroRotation =
-      new Rotation2d(-0.7853181997882291).minus(new Rotation2d(Degrees.of(16 + 2)));
+      new Rotation2d(-0.7853181997882291).minus(new Rotation2d(Degrees.of(16 + 5)));
   public static final Rotation2d frontRightZeroRotation =
-      new Rotation2d(-1.9785268942462368).minus(new Rotation2d(Degrees.of(-7 - 2)));
+      new Rotation2d(-1.9785268942462368).minus(new Rotation2d(Degrees.of(-7 - 3)));
   public static final Rotation2d backLeftZeroRotation =
       new Rotation2d(1.2279650529278354)
-          .minus(new Rotation2d(Degrees.of(-5)))
-          .minus(Rotation2d.k180deg);
+          .minus(new Rotation2d(Degrees.of(-8)))
+          .minus(Rotation2d.kCCW_90deg);
   public static final Rotation2d backRightZeroRotation =
       new Rotation2d(-0.8600462118731901).minus(new Rotation2d(Degrees.of(17.5 + 2)));
 
