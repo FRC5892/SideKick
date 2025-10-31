@@ -35,6 +35,9 @@ public class FiringSolutionSolver {
 
   private double maxHoodPitchDeg = 90.0; // placeholder
 
+  /** Stores the reason a shot is impossible */
+  private String lastImpossibleReason = "";
+
   /** Represents a computed firing solution. */
   public static class FiringSolution {
     public final double time;
@@ -76,6 +79,11 @@ public class FiringSolutionSolver {
     this.maxHoodPitchDeg = maxDeg;
   }
 
+  /** Get reason why last shot was impossible. */
+  public String getLastImpossibleReason() {
+    return lastImpossibleReason;
+  }
+
   /**
    * Computes the optimal firing solution for a moving robot and stationary target.
    *
@@ -85,6 +93,8 @@ public class FiringSolutionSolver {
    */
   public Optional<FiringSolution> solve(
       Translation3d translationToTarget, Translation3d robotVelocity) {
+
+    lastImpossibleReason = "No solution found"; // default reason
     FiringSolution best = null;
 
     for (double t = minTime; t <= maxTime; t += dt) {
@@ -95,25 +105,21 @@ public class FiringSolutionSolver {
 
       double speed = Math.sqrt(vx * vx + vy * vy + vz * vz);
 
-      // Skip if speed is outside shooter capabilities
       if (speed < minShooterSpeed || speed > maxShooterSpeed) {
-        // Debug log
-        // System.out.println("Impossible: speed out of range");
+        lastImpossibleReason = "Shooter speed out of range";
         continue;
       }
 
       double yawDeg = Math.toDegrees(Math.atan2(vy, vx));
       if (yawDeg < -maxTurretYawDeg || yawDeg > maxTurretYawDeg) {
-        // Debug log
-        // System.out.println("Impossible: yaw out of range");
+        lastImpossibleReason = "Turret yaw out of range";
         continue;
       }
       double yaw = Math.toRadians(yawDeg);
 
       double pitchDeg = Math.toDegrees(Math.atan2(vz, Math.hypot(vx, vy)));
       if (pitchDeg < minHoodPitchDeg || pitchDeg > maxHoodPitchDeg) {
-        // Debug log
-        // System.out.println("Impossible: pitch out of range");
+        lastImpossibleReason = "Hood pitch out of range";
         continue;
       }
       double pitch = Math.toRadians(pitchDeg);
@@ -129,7 +135,6 @@ public class FiringSolutionSolver {
       }
     }
 
-    // Return empty Optional if no valid solution found
     return Optional.ofNullable(best);
   }
 
