@@ -18,10 +18,12 @@ public class FiringSolutionSolver {
 
   /** Shooter speed limits (m/s) */
   private final double minShooterSpeed;
+
   private final double maxShooterSpeed;
 
   /** Flight time parameters */
   private final double minTime = 0.05;
+
   private final double maxTime = 5.0;
   private final double dt = 0.01;
 
@@ -30,7 +32,8 @@ public class FiringSolutionSolver {
 
   /** Hood pitch limits (degrees) - update when known */
   private double minHoodPitchDeg = -90.0; // placeholder
-  private double maxHoodPitchDeg = 90.0;  // placeholder
+
+  private double maxHoodPitchDeg = 90.0; // placeholder
 
   /** Represents a computed firing solution. */
   public static class FiringSolution {
@@ -116,7 +119,8 @@ public class FiringSolutionSolver {
       double pitch = Math.toRadians(pitchDeg);
 
       FiringSolution sol =
-          new FiringSolution(t, speed, new Rotation2d(yaw), new Rotation2d(pitch), new Translation3d(vx, vy, vz));
+          new FiringSolution(
+              t, speed, new Rotation2d(yaw), new Rotation2d(pitch), new Translation3d(vx, vy, vz));
 
       if (best == null
           || sol.shooterSpeed < best.shooterSpeed - 1e-6
