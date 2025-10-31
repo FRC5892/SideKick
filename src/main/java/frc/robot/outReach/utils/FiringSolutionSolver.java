@@ -10,9 +10,9 @@ import java.util.Optional;
  * <p>Given a translation to a target and the robot's current velocity, this class computes the
  * projectile initial velocity, turret yaw, and hood pitch required to hit the target accounting for
  * gravity and robot motion. Does NOT interface with any motors.
- * 
- * Currently, this is designed to use the solution with the lowest shooter speed.
- * If there is a tie, it will then select between the two based on which solution has a shorter flight time.
+ *
+ * <p>Currently, this is designed to use the solution with the lowest shooter speed. If there is a
+ * tie, it will then select between the two based on which solution has a shorter flight time.
  */
 public class FiringSolutionSolver {
 
