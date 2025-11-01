@@ -1,7 +1,9 @@
 package frc.robot.outReach.utils;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.DriverStation;
 import java.util.Optional;
 
 /*
@@ -37,9 +39,6 @@ public class FiringSolutionSolver {
   private double minHoodPitchDeg = -90.0; // placeholder
 
   private double maxHoodPitchDeg = 90.0; // placeholder
-
-  /** Stores the reason a shot is impossible */
-  private String lastImpossibleReason = "";
 
   /** Represents a computed firing solution. */
   public static class FiringSolution {
@@ -82,25 +81,21 @@ public class FiringSolutionSolver {
     this.maxHoodPitchDeg = maxDeg;
   }
 
-  /** Get reason why last shot was impossible. */
-  public String getLastImpossibleReason() {
-    return lastImpossibleReason;
-  }
-
   /**
    * Computes the optimal firing solution for a moving robot and stationary target.
    *
-   * @param translationToTarget Translation from shooter to target (robot frame, meters)
+   * @param targetPose Transform from shooter to target (robot frame, meters)
    * @param robotVelocity Current robot velocity (robot frame, m/s)
    * @return Optional containing firing solution, or empty if physically impossible
    */
-  public Optional<FiringSolution> solve(
-      Translation3d translationToTarget, Translation3d robotVelocity) {
+  public Optional<FiringSolution> solve(Transform3d targetPose, Translation3d robotVelocity) {
 
-    lastImpossibleReason = "No solution found"; // default reason
     FiringSolution best = null;
 
+    Translation3d translationToTarget = targetPose.getTranslation();
+
     for (double t = minTime; t <= maxTime; t += dt) {
+      // Compute projectile initial velocity to intercept target while robot moves
       double vx = (translationToTarget.getX() - robotVelocity.getX() * t) / t;
       double vy = (translationToTarget.getY() - robotVelocity.getY() * t) / t;
       double vz =
@@ -108,21 +103,22 @@ public class FiringSolutionSolver {
 
       double speed = Math.sqrt(vx * vx + vy * vy + vz * vz);
 
+      // Skip if speed is outside shooter capabilities
       if (speed < minShooterSpeed || speed > maxShooterSpeed) {
-        lastImpossibleReason = "Shooter speed out of range";
+        DriverStation.reportWarning("Shooter speed out of range", false);
         continue;
       }
 
       double yawDeg = Math.toDegrees(Math.atan2(vy, vx));
       if (yawDeg < -maxTurretYawDeg || yawDeg > maxTurretYawDeg) {
-        lastImpossibleReason = "Turret yaw out of range";
+        DriverStation.reportWarning("Turret yaw out of range", false);
         continue;
       }
       double yaw = Math.toRadians(yawDeg);
 
       double pitchDeg = Math.toDegrees(Math.atan2(vz, Math.hypot(vx, vy)));
       if (pitchDeg < minHoodPitchDeg || pitchDeg > maxHoodPitchDeg) {
-        lastImpossibleReason = "Hood pitch out of range";
+        DriverStation.reportWarning("Hood pitch out of range", false);
         continue;
       }
       double pitch = Math.toRadians(pitchDeg);
@@ -131,11 +127,16 @@ public class FiringSolutionSolver {
           new FiringSolution(
               t, speed, new Rotation2d(yaw), new Rotation2d(pitch), new Translation3d(vx, vy, vz));
 
+      // Choose solution with lowest shooter speed, then shortest flight time
       if (best == null
           || sol.shooterSpeed < best.shooterSpeed - 1e-6
           || (Math.abs(sol.shooterSpeed - best.shooterSpeed) < 1e-6 && sol.time < best.time)) {
         best = sol;
       }
+    }
+
+    if (best == null) {
+      DriverStation.reportWarning("No valid firing solution found", false);
     }
 
     return Optional.ofNullable(best);
