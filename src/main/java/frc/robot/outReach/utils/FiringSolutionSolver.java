@@ -4,7 +4,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /*
  * Utility class for computing firing solutions for a complete shooter system.
@@ -35,10 +37,10 @@ public class FiringSolutionSolver {
   /** Turret yaw limits (degrees) */
   private final double maxTurretYawDeg = 167.0;
 
-  /** Hood pitch limits (degrees) - update when known */
-  private double minHoodPitchDeg = -90.0; // placeholder
+  /** Hood pitch limits (degrees) - TODO: Replace with real hardware limits */
+  private static final double MIN_HOOD_PITCH_DEG = 10.0; // placeholder
 
-  private double maxHoodPitchDeg = 90.0; // placeholder
+  private static final double MAX_HOOD_PITCH_DEG = 50.0; // placeholder
 
   /** Represents a computed firing solution. */
   public static class FiringSolution {
@@ -75,12 +77,6 @@ public class FiringSolutionSolver {
     this.maxShooterSpeed = maxShooterSpeed;
   }
 
-  /** Set hood pitch limits once known. */
-  public void setHoodPitchLimits(double minDeg, double maxDeg) {
-    this.minHoodPitchDeg = minDeg;
-    this.maxHoodPitchDeg = maxDeg;
-  }
-
   /**
    * Computes the optimal firing solution for a moving robot and stationary target.
    *
@@ -91,11 +87,12 @@ public class FiringSolutionSolver {
   public Optional<FiringSolution> solve(Transform3d targetPose, Translation3d robotVelocity) {
 
     FiringSolution best = null;
-
     Translation3d translationToTarget = targetPose.getTranslation();
 
+    // Track which warnings we already reported to avoid spamming logs
+    Set<String> reportedWarnings = new HashSet<>();
+
     for (double t = minTime; t <= maxTime; t += dt) {
-      // Compute projectile initial velocity to intercept target while robot moves
       double vx = (translationToTarget.getX() - robotVelocity.getX() * t) / t;
       double vy = (translationToTarget.getY() - robotVelocity.getY() * t) / t;
       double vz =
@@ -103,22 +100,30 @@ public class FiringSolutionSolver {
 
       double speed = Math.sqrt(vx * vx + vy * vy + vz * vz);
 
-      // Skip if speed is outside shooter capabilities
       if (speed < minShooterSpeed || speed > maxShooterSpeed) {
-        DriverStation.reportWarning("Shooter speed out of range", false);
+        if (!reportedWarnings.contains("Shooter speed")) {
+          DriverStation.reportWarning("Shooter speed out of range", false);
+          reportedWarnings.add("Shooter speed");
+        }
         continue;
       }
 
       double yawDeg = Math.toDegrees(Math.atan2(vy, vx));
       if (yawDeg < -maxTurretYawDeg || yawDeg > maxTurretYawDeg) {
-        DriverStation.reportWarning("Turret yaw out of range", false);
+        if (!reportedWarnings.contains("Turret yaw")) {
+          DriverStation.reportWarning("Turret yaw out of range", false);
+          reportedWarnings.add("Turret yaw");
+        }
         continue;
       }
       double yaw = Math.toRadians(yawDeg);
 
       double pitchDeg = Math.toDegrees(Math.atan2(vz, Math.hypot(vx, vy)));
-      if (pitchDeg < minHoodPitchDeg || pitchDeg > maxHoodPitchDeg) {
-        DriverStation.reportWarning("Hood pitch out of range", false);
+      if (pitchDeg < MIN_HOOD_PITCH_DEG || pitchDeg > MAX_HOOD_PITCH_DEG) {
+        if (!reportedWarnings.contains("Hood pitch")) {
+          DriverStation.reportWarning("Hood pitch out of range", false);
+          reportedWarnings.add("Hood pitch");
+        }
         continue;
       }
       double pitch = Math.toRadians(pitchDeg);
@@ -127,7 +132,6 @@ public class FiringSolutionSolver {
           new FiringSolution(
               t, speed, new Rotation2d(yaw), new Rotation2d(pitch), new Translation3d(vx, vy, vz));
 
-      // Choose solution with lowest shooter speed, then shortest flight time
       if (best == null
           || sol.shooterSpeed < best.shooterSpeed - 1e-6
           || (Math.abs(sol.shooterSpeed - best.shooterSpeed) < 1e-6 && sol.time < best.time)) {
@@ -135,8 +139,9 @@ public class FiringSolutionSolver {
       }
     }
 
-    if (best == null) {
+    if (best == null && !reportedWarnings.contains("No solution")) {
       DriverStation.reportWarning("No valid firing solution found", false);
+      reportedWarnings.add("No solution");
     }
 
     return Optional.ofNullable(best);
