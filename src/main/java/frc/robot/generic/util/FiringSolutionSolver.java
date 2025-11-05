@@ -9,31 +9,50 @@ import org.littletonrobotics.junction.Logger;
  */
 public final class FiringSolutionSolver {
 
-  // --- Tunable constants (via AdvantageKit dashboard) ---
-  private static final LoggedTunableNumber kDragCoefficient =
-      new LoggedTunableNumber("FiringSolver/DragCoefficient", 0.003);
-  private static final LoggedTunableNumber kProjectileArea =
-      new LoggedTunableNumber("FiringSolver/ProjectileArea", 0.0015);
-  private static final LoggedTunableNumber kProjectileMass =
-      new LoggedTunableNumber("FiringSolver/ProjectileMass", 0.18);
-  private static final LoggedTunableNumber kLaunchHeight =
-      new LoggedTunableNumber("FiringSolver/LaunchHeight", 0.8);
-  private static final LoggedTunableNumber kTargetHeight =
-      new LoggedTunableNumber("FiringSolver/TargetHeight", 2.3);
-  private static final LoggedTunableNumber kMaxExitVelocity =
-      new LoggedTunableNumber("FiringSolver/MaxExitVelocity", 30.0);
+ // --- Tunable constants (via AdvantageKit dashboard) ---
+// Drag coefficient (dimensionless)
+private static final LoggedTunableNumber kDragCoefficient =
+    new LoggedTunableNumber("FiringSolver/DragCoefficient", 0.003);
 
-  // --- Tunable iteration parameters ---
-  private static final LoggedTunableNumber kVelocityIterationCount =
-      new LoggedTunableNumber("FiringSolver/VelocityIterations", 20);
-  private static final LoggedTunableNumber kAngleIterationCount =
-      new LoggedTunableNumber("FiringSolver/AngleIterations", 20);
-  private static final LoggedTunableNumber kVelocityTolerance =
-      new LoggedTunableNumber("FiringSolver/VelocityTolerance", 0.01);
-  private static final LoggedTunableNumber kAngleTolerance =
-      new LoggedTunableNumber("FiringSolver/AngleTolerance", 1e-4);
+// Projectile cross-sectional area in square meters (m^2)
+private static final LoggedTunableNumber kProjectileArea =
+    new LoggedTunableNumber("FiringSolver/ProjectileArea", 0.0015);
+
+// Projectile mass in kilograms (kg)
+private static final LoggedTunableNumber kProjectileMass =
+    new LoggedTunableNumber("FiringSolver/ProjectileMass", 0.18);
+
+// Launcher height in meters (m)
+private static final LoggedTunableNumber kLaunchHeight =
+    new LoggedTunableNumber("FiringSolver/LaunchHeight", 0.8);
+
+// Target height in meters (m)
+private static final LoggedTunableNumber kTargetHeight =
+    new LoggedTunableNumber("FiringSolver/TargetHeight", 2.3);
+
+// Maximum exit velocity in meters per second (m/s)
+private static final LoggedTunableNumber kMaxExitVelocity =
+    new LoggedTunableNumber("FiringSolver/MaxExitVelocity", 30.0);
+
+// --- Tunable iteration parameters ---
+// Number of velocity iterations (unitless)
+private static final LoggedTunableNumber kVelocityIterationCount =
+    new LoggedTunableNumber("FiringSolver/VelocityIterations", 20);
+
+// Number of angle iterations (unitless)
+private static final LoggedTunableNumber kAngleIterationCount =
+    new LoggedTunableNumber("FiringSolver/AngleIterations", 20);
+
+// Velocity convergence tolerance in meters per second (m/s)
+private static final LoggedTunableNumber kVelocityTolerance =
+    new LoggedTunableNumber("FiringSolver/VelocityTolerance", 0.01);
+
+// Angle convergence tolerance in radians (rad)
+private static final LoggedTunableNumber kAngleTolerance =
+    new LoggedTunableNumber("FiringSolver/AngleTolerance", 1e-4);
 
   private static final double GRAVITY = 9.80665;
+  // off by ~0.075 due to humidity, not important enough to fix.
   private static final double AIR_DENSITY = 1.225;
 
   private FiringSolutionSolver() {}
