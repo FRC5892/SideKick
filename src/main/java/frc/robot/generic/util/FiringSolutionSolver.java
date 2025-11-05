@@ -37,7 +37,6 @@ public final class FiringSolutionSolver {
 
   private static final double GRAVITY = 9.80665;
   private static final double AIR_DENSITY = 1.225;
-  private static final String LOG_PREFIX = "FiringSolver/";
 
   private FiringSolutionSolver() {}
 
@@ -127,15 +126,12 @@ public final class FiringSolutionSolver {
   }
 
   private static void logSolution(double yaw, double pitch, double velocity) {
-    Logger.recordOutput(LOG_PREFIX + "YawRad", yaw);
-    Logger.recordOutput(LOG_PREFIX + "PitchRad", pitch);
-    Logger.recordOutput(LOG_PREFIX + "VelocityMPS", velocity);
-    Logger.recordOutput(LOG_PREFIX + "Timestamp", Timer.getFPGATimestamp());
-  }
+  Logger.recordOutput("FiringSolver/YawRad", yaw);
+  Logger.recordOutput("FiringSolver/PitchRad", pitch);
+  Logger.recordOutput("FiringSolver/VelocityMPS", velocity);
+  Logger.recordOutput("FiringSolver/Timestamp", Timer.getFPGATimestamp());
+}
 
-  public static void logHit(boolean hit) {
-    Logger.recordOutput(LOG_PREFIX + "ShotResult", hit ? "Hit" : "Miss");
-  }
 
   public record FiringSolution(double yawRadians, double pitchRadians, double exitVelocity) {}
 }
