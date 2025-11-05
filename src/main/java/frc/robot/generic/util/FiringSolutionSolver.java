@@ -40,14 +40,9 @@ public final class FiringSolutionSolver {
 
   public static FiringSolution computeFiringSolution(
       Translation3d targetPosition,
-      Translation3d robotPose,
-      double robotYaw,
       boolean isFieldRelative) {
 
-    Translation3d relTarget =
-        isFieldRelative
-            ? fieldToRobotRelative(targetPosition, robotPose, robotYaw)
-            : targetPosition;
+    Translation3d relTarget = targetPosition;
 
     double dx = relTarget.getX();
     double dy = relTarget.getY();
@@ -68,22 +63,6 @@ public final class FiringSolutionSolver {
 
     Logger.recordOutput("FiringSolver/Solution", new FiringSolution(flatYaw, pitch, velocity));
     return new FiringSolution(flatYaw, pitch, velocity);
-  }
-
-  private static Translation3d fieldToRobotRelative(
-      Translation3d fieldTarget, Translation3d robotPose, double robotYaw) {
-
-    double dx = fieldTarget.getX() - robotPose.getX();
-    double dy = fieldTarget.getY() - robotPose.getY();
-    double dz = fieldTarget.getZ() - robotPose.getZ();
-
-    double cosA = Math.cos(-robotYaw);
-    double sinA = Math.sin(-robotYaw);
-
-    double robotX = dx * cosA - dy * sinA;
-    double robotY = dx * sinA + dy * cosA;
-
-    return new Translation3d(robotX, robotY, dz);
   }
 
   private static double estimateExitVelocity(double range, double heightDiff) {
