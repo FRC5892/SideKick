@@ -1,6 +1,7 @@
 package frc.robot.generic.util;
 
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Timer;
 import org.littletonrobotics.junction.Logger;
 
@@ -65,8 +66,8 @@ public final class FiringSolutionSolver {
     double pitch = estimateLaunchAngle(horizontalDistance, dz, velocity);
 
     // Clamp pitch/yaw to safe turret limits
-    pitch = Math.max(0.0, Math.min(Math.PI / 2, pitch));
-    flatYaw = Math.max(-Math.PI, Math.min(Math.PI, flatYaw));
+    pitch = MathUtil.clamp(pitch, 0.0, Math.PI / 2);
+    flatYaw = MathUtil.clamp(flatYaw, -Math.PI, Math.PI);
 
     logSolution(flatYaw, pitch, velocity);
     return new FiringSolution(flatYaw, pitch, velocity);
