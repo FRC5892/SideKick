@@ -1,6 +1,7 @@
 package frc.robot.generic.util;
-import edu.wpi.first.math.geometry.Translation3d;
+
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Translation3d;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -9,47 +10,47 @@ import org.littletonrobotics.junction.Logger;
  */
 public final class FiringSolutionSolver {
 
- // --- Tunable constants (via AdvantageKit dashboard) ---
-// Drag coefficient (dimensionless)
-private static final LoggedTunableNumber kDragCoefficient =
-    new LoggedTunableNumber("FiringSolver/DragCoefficient", 0.003);
+  // --- Tunable constants (via AdvantageKit dashboard) ---
+  // Drag coefficient (dimensionless)
+  private static final LoggedTunableNumber kDragCoefficient =
+      new LoggedTunableNumber("FiringSolver/DragCoefficient", 0.003);
 
-// Projectile cross-sectional area in square meters (m^2)
-private static final LoggedTunableNumber kProjectileArea =
-    new LoggedTunableNumber("FiringSolver/ProjectileArea", 0.0015);
+  // Projectile cross-sectional area in square meters (m^2)
+  private static final LoggedTunableNumber kProjectileArea =
+      new LoggedTunableNumber("FiringSolver/ProjectileArea", 0.0015);
 
-// Projectile mass in kilograms (kg)
-private static final LoggedTunableNumber kProjectileMass =
-    new LoggedTunableNumber("FiringSolver/ProjectileMass", 0.18);
+  // Projectile mass in kilograms (kg)
+  private static final LoggedTunableNumber kProjectileMass =
+      new LoggedTunableNumber("FiringSolver/ProjectileMass", 0.18);
 
-// Launcher height in meters (m)
-private static final LoggedTunableNumber kLaunchHeight =
-    new LoggedTunableNumber("FiringSolver/LaunchHeight", 0.8);
+  // Launcher height in meters (m)
+  private static final LoggedTunableNumber kLaunchHeight =
+      new LoggedTunableNumber("FiringSolver/LaunchHeight", 0.8);
 
-// Target height in meters (m)
-private static final LoggedTunableNumber kTargetHeight =
-    new LoggedTunableNumber("FiringSolver/TargetHeight", 2.3);
+  // Target height in meters (m)
+  private static final LoggedTunableNumber kTargetHeight =
+      new LoggedTunableNumber("FiringSolver/TargetHeight", 2.3);
 
-// Maximum exit velocity in meters per second (m/s)
-private static final LoggedTunableNumber kMaxExitVelocity =
-    new LoggedTunableNumber("FiringSolver/MaxExitVelocity", 30.0);
+  // Maximum exit velocity in meters per second (m/s)
+  private static final LoggedTunableNumber kMaxExitVelocity =
+      new LoggedTunableNumber("FiringSolver/MaxExitVelocity", 30.0);
 
-// --- Tunable iteration parameters ---
-// Number of velocity iterations (unitless)
-private static final LoggedTunableNumber kVelocityIterationCount =
-    new LoggedTunableNumber("FiringSolver/VelocityIterations", 20);
+  // --- Tunable iteration parameters ---
+  // Number of velocity iterations (unitless)
+  private static final LoggedTunableNumber kVelocityIterationCount =
+      new LoggedTunableNumber("FiringSolver/VelocityIterations", 20);
 
-// Number of angle iterations (unitless)
-private static final LoggedTunableNumber kAngleIterationCount =
-    new LoggedTunableNumber("FiringSolver/AngleIterations", 20);
+  // Number of angle iterations (unitless)
+  private static final LoggedTunableNumber kAngleIterationCount =
+      new LoggedTunableNumber("FiringSolver/AngleIterations", 20);
 
-// Velocity convergence tolerance in meters per second (m/s)
-private static final LoggedTunableNumber kVelocityTolerance =
-    new LoggedTunableNumber("FiringSolver/VelocityTolerance", 0.01);
+  // Velocity convergence tolerance in meters per second (m/s)
+  private static final LoggedTunableNumber kVelocityTolerance =
+      new LoggedTunableNumber("FiringSolver/VelocityTolerance", 0.01);
 
-// Angle convergence tolerance in radians (rad)
-private static final LoggedTunableNumber kAngleTolerance =
-    new LoggedTunableNumber("FiringSolver/AngleTolerance", 1e-4);
+  // Angle convergence tolerance in radians (rad)
+  private static final LoggedTunableNumber kAngleTolerance =
+      new LoggedTunableNumber("FiringSolver/AngleTolerance", 1e-4);
 
   private static final double GRAVITY = 9.80665;
   // off by ~0.075 due to humidity, not important enough to fix.
@@ -58,15 +59,14 @@ private static final LoggedTunableNumber kAngleTolerance =
   private FiringSolutionSolver() {}
 
   public static FiringSolution computeFiringSolution(
-      Translation3d targetPosition,
-      boolean isFieldRelative) {
+      Translation3d targetPosition, boolean isFieldRelative) {
 
     Translation3d relTarget = targetPosition;
 
     double dx = relTarget.getX();
     double dy = relTarget.getY();
 
-    // use the real z difference then apply tunable offsets 
+    // use the real z difference then apply tunable offsets
     // TODO: Consider removing height offsets once launcher/target calibration is finalized.
     double dz = relTarget.getZ() + (kTargetHeight.get() - kLaunchHeight.get());
 
@@ -120,11 +120,11 @@ private static final LoggedTunableNumber kAngleTolerance =
     }
     return angle;
   }
-   
-/** Logs whether a shot hit or missed. */
-public static void logShotResult(boolean hit) {
+
+  /** Logs whether a shot hit or missed. */
+  public static void logShotResult(boolean hit) {
     Logger.recordOutput("FiringSolver/Hit", hit);
-}
+  }
 
   public record FiringSolution(double yawRadians, double pitchRadians, double exitVelocity) {}
 }
