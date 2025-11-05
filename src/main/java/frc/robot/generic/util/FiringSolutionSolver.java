@@ -53,7 +53,10 @@ public final class FiringSolutionSolver {
 
     double dx = relTarget.getX();
     double dy = relTarget.getY();
-    double dz = kTargetHeight.get() - kLaunchHeight.get();
+
+    // use the real z difference then apply tunable offsets 
+    // TODO: Consider removing height offsets once launcher/target calibration is finalized.
+    double dz = relTarget.getZ() + (kTargetHeight.get() - kLaunchHeight.get());
 
     double horizontalDistance = Math.hypot(dx, dy);
     double flatYaw = Math.atan2(dy, dx);
