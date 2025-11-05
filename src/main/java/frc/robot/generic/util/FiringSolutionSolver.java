@@ -1,8 +1,6 @@
 package frc.robot.generic.util;
-
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj.Timer;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -68,7 +66,7 @@ public final class FiringSolutionSolver {
     pitch = MathUtil.clamp(pitch, 0.0, Math.PI / 2);
     flatYaw = MathUtil.clamp(flatYaw, -Math.PI, Math.PI);
 
-    logSolution(flatYaw, pitch, velocity);
+    Logger.recordOutput("FiringSolver/Solution", new FiringSolution(flatYaw, pitch, velocity));
     return new FiringSolution(flatYaw, pitch, velocity);
   }
 
@@ -124,14 +122,11 @@ public final class FiringSolutionSolver {
     }
     return angle;
   }
-
-  private static void logSolution(double yaw, double pitch, double velocity) {
-  Logger.recordOutput("FiringSolver/YawRad", yaw);
-  Logger.recordOutput("FiringSolver/PitchRad", pitch);
-  Logger.recordOutput("FiringSolver/VelocityMPS", velocity);
-  Logger.recordOutput("FiringSolver/Timestamp", Timer.getFPGATimestamp());
+   
+/** Logs whether a shot hit or missed. */
+public static void logShotResult(boolean hit) {
+    Logger.recordOutput("FiringSolver/Hit", hit);
 }
-
 
   public record FiringSolution(double yawRadians, double pitchRadians, double exitVelocity) {}
 }
