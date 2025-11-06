@@ -66,7 +66,7 @@ public class SwerveBuilder {
             drive,
             () -> -driveController.getLeftY(),
             () -> -driveController.getLeftX(),
-            () -> -driveController.getRightX()));
+            () -> driveController.getRightX()));
     driveController
         .y()
         .onTrue(
