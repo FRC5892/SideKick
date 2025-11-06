@@ -13,6 +13,7 @@
 
 package frc.robot.outReach;
 
+import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
@@ -24,8 +25,15 @@ import frc.robot.generic.Robot;
 import frc.robot.generic.commands.DriveCommands;
 import frc.robot.generic.subsystems.drive.Drive;
 import frc.robot.generic.util.AbstractRobotContainer;
+import frc.robot.generic.util.LoggedDIO.HardwareDIO;
+import frc.robot.generic.util.LoggedDIO.NoOppDio;
+import frc.robot.generic.util.LoggedDIO.SimDIO;
+import frc.robot.generic.util.LoggedTalon.NoOppTalonFX;
+import frc.robot.generic.util.LoggedTalon.PhoenixTalonFX;
+import frc.robot.generic.util.LoggedTalon.SimpleMotorSim;
 import frc.robot.generic.util.RobotConfig;
 import frc.robot.generic.util.SwerveBuilder;
+import frc.robot.outReach.subsystems.shooter.Shooter;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -40,8 +48,11 @@ public class RobotContainer implements AbstractRobotContainer {
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
 
+  private final CANBus canBus = new CANBus();
+
   // Subsystems
   private final Drive drive = SwerveBuilder.buildDefaultDrive(controller);
+  private final Shooter shooter;
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -50,10 +61,25 @@ public class RobotContainer implements AbstractRobotContainer {
   public RobotContainer() {
     switch (Constants.currentMode) {
       case REAL:
+        shooter =
+            new Shooter(
+                new PhoenixTalonFX(0, canBus, "Turret"),
+                new HardwareDIO("ForwardLimit", 0),
+                new HardwareDIO("ReverseLimit", 1));
         break;
       case SIM:
+        shooter =
+            new Shooter(
+                new SimpleMotorSim(0, canBus, "Turret", 10, 10),
+                SimDIO.fromNT("ForwardLimit"),
+                SimDIO.fromNT("ReverseLimit"));
         break;
       default:
+        shooter =
+            new Shooter(
+                new NoOppTalonFX("Turret", 0),
+                new NoOppDio("ForwardLimit"),
+                new NoOppDio("ReverseLimit"));
         break;
     }
 
@@ -86,7 +112,10 @@ public class RobotContainer implements AbstractRobotContainer {
    * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
-  private void configureButtonBindings() {}
+  private void configureButtonBindings() {
+    controller.a().onTrue(shooter.turnToRotationCommand(0.5));
+    controller.b().onTrue(shooter.turnToRotationCommand(0));
+  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
