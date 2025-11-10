@@ -80,8 +80,14 @@ public final class FiringSolutionSolver {
     pitch = MathUtil.clamp(pitch, 0.0, Math.PI / 2);
     flatYaw = MathUtil.clamp(flatYaw, -Math.PI, Math.PI);
 
-    Logger.recordOutput("FiringSolver/Solution", new FiringSolution(flatYaw, pitch, velocity));
-    return new FiringSolution(flatYaw, pitch, velocity);
+    // Create solution once
+    FiringSolution solution = new FiringSolution(flatYaw, pitch, velocity);
+
+    // Record output
+    Logger.recordOutput("FiringSolver/Solution", solution);
+
+    // Return the same solution
+    return solution;
   }
 
   private static double estimateExitVelocity(double range, double heightDiff) {
