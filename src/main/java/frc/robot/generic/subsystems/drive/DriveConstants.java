@@ -40,12 +40,12 @@ public class DriveConstants {
   // Zeroed rotation values for each module, see setup instructions
   // CW = +
   /*
-  If a wheel is overrotated, subtract degrees from its angle.
-  That means the wheel needs to rotate toward the robot’s absolute left
+  If a wheel is overrotated, subtract degrees from its angle.  
+  That means the wheel needs to rotate toward the robot’s absolute left 
   (counterclockwise when viewed from above).
 
-  If a wheel is underrotated, add degrees to its angle.
-  That means the wheel needs to rotate toward the robot’s absolute right
+  If a wheel is underrotated, add degrees to its angle.  
+  That means the wheel needs to rotate toward the robot’s absolute right 
   (clockwise when viewed from above).
 
   To decide whether a wheel is over- or underrotated:
@@ -122,6 +122,7 @@ public class DriveConstants {
       (2 * Math.PI) / 12.8; // Rotations -> Radians
   public static final double turnEncoderVelocityFactor =
       ((2 * Math.PI) / 60.0) / 12.8; // RPM -> Rad/Sec
+
 
   public static final SensorDirectionValue frontLeftTurnDirection =
       SensorDirectionValue.Clockwise_Positive;
