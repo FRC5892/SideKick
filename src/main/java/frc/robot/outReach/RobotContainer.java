@@ -31,9 +31,10 @@ import frc.robot.generic.util.LoggedDIO.SimDIO;
 import frc.robot.generic.util.LoggedTalon.NoOppTalonFX;
 import frc.robot.generic.util.LoggedTalon.PhoenixTalonFX;
 import frc.robot.generic.util.LoggedTalon.SimpleMotorSim;
+import frc.robot.outReach.subsystems.turret.Turret;
 import frc.robot.generic.util.RobotConfig;
 import frc.robot.generic.util.SwerveBuilder;
-import frc.robot.outReach.subsystems.shooter.Shooter;
+
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -52,7 +53,7 @@ public class RobotContainer implements AbstractRobotContainer {
 
   // Subsystems
   private final Drive drive = SwerveBuilder.buildDefaultDrive(controller);
-  private final Shooter shooter;
+  private final Turret shooter;
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -62,21 +63,21 @@ public class RobotContainer implements AbstractRobotContainer {
     switch (Constants.currentMode) {
       case REAL:
         shooter =
-            new Shooter(
+            new Turret(
                 new PhoenixTalonFX(0, canBus, "Turret"),
                 new HardwareDIO("ForwardLimit", 0),
                 new HardwareDIO("ReverseLimit", 1));
         break;
       case SIM:
         shooter =
-            new Shooter(
+            new Turret(
                 new SimpleMotorSim(0, canBus, "Turret", 10, 10),
                 SimDIO.fromNT("ForwardLimit"),
                 SimDIO.fromNT("ReverseLimit"));
         break;
       default:
         shooter =
-            new Shooter(
+            new Turret(
                 new NoOppTalonFX("Turret", 0),
                 new NoOppDio("ForwardLimit"),
                 new NoOppDio("ReverseLimit"));
