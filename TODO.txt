@@ -1,1 +1,133 @@
+FRC SHOOTER BAYESIAN TUNER PLAN
+===============================
+
+PURPOSE:
+--------
+Create a Bayesian optimization-based tuner to refine coefficients in FiringSolutionSolver.
+Goal: adaptive turret adjustments after each shot, using hit/miss data.
+Constraints: Python tuner on Driver Station, communicate via NetworkTables (NT).
+Do NOT touch vision or ball properties.
+
+CORE IDEA:
+----------
+Python tuner on Driver Station <--> Java robot code via NT
+  - Robot sends: shot data (distance, angle, velocity, hit/miss)
+  - Python tuner sends: updated coefficient values
+  - AdvantageKit logs all data
+  - PhotonVision handles position/distance data (read-only)
+
+TUNABLE COEFFICIENTS (ALLOWED):
+-------------------------------
+  1. kDragCoefficient
+       Start: 0.003
+       Range: [0.001, 0.006]
+       Importance: High
+       Reason: Adjust for drag variations (humidity, foam wear, air resistance)
+
+  2. kAirDensity
+       Start: 1.225
+       Range: [1.10, 1.30]
+       Importance: Medium
+       Reason: Adjust for real-world variation
+
+  3. kVelocityIterationCount
+       Start: 20
+       Range: [10, 50]
+       Importance: Medium
+       Reason: Solver convergence performance
+
+  4. kAngleIterationCount
+       Start: 20
+       Range: [10, 50]
+       Importance: Medium
+       Reason: Solver convergence performance
+
+  5. kVelocityTolerance
+       Start: 0.01
+       Range: [0.005, 0.05]
+       Importance: Low
+       Reason: Fine-tuning velocity convergence
+
+  6. kAngleTolerance
+       Start: 1e-4
+       Range: [1e-5, 1e-3]
+       Importance: Low
+       Reason: Fine-tuning angle convergence
+
+  7. kLaunchHeight
+       Start: 0.8
+       Range: [0.75, 0.85]
+       Importance: Low
+       Reason: Minor calibration variance only
+
+OFF-LIMITS:
+------------
+  - kProjectileArea       (fixed 4" diameter, 3.5" compressed)
+  - kProjectileMass       (fixed measured value)
+  - kTargetHeight         (from PhotonVision)
+  - kMaxExitVelocity      (physical limit)
+  - Hood/turret limits    (enforced in Java)
+  - Any vision-derived data (do not tune)
+
+TUNING ORDER:
+-------------
+  1. Drag Coefficient
+  2. Air Density
+  3. Velocity Iterations
+  4. Angle Iterations
+  5. Velocity Tolerance
+  6. Angle Tolerance
+  7. Launch Height (optional, minimal changes)
+
+OPTIMIZATION STRATEGY:
+----------------------
+  - Bayesian optimization using scikit-optimize (Python)
+  - Begin with large adjustments
+  - Gradually shrink as accuracy improves
+  - Tune one variable at a time
+  - Follow importance priority
+  - Clamp within defined bounds
+  - Stop if negligible improvement
+  - Be able to set which variables to tune and which ones to not, and and what order
+
+DATA SOURCES:
+-------------
+  - AdvantageKit logs: hit/miss, timestamps, solver variables, all other robot logs/data
+  - PhotonVision: target distance/height (read-only)
+  - NetworkTables: two-way communication
+  - Python tuner: optimization engine
+
+SAFETY:
+-------
+  - Clamp coefficient values
+  - Reject out-of-range updates
+  - Log every parameter change with timestamp
+  - Adjust one coefficient at a time
+  - Abort tuning cycle if abnormal readings or loss of NT
+  - Michael wears full coverage safety glasses during implementation trial runs
+
+DOCUMENTATION REQUIREMENTS:
+---------------------------
+  - Comment every variable and function: what it does, why it exists
+  - Include AdvantageKit paths and NT key names
+  - Skip deep math; explain what code does, not physics
+  - Document so someone can understand the code, not the math
+  - UNIT TESTS
+  - Example values for clarity
+
+IMPLEMENTATION NOTES:
+---------------------
+  - Python autotuner runs on Driver Station
+  - Robot reads updates via NT and applies new coefficients
+  - FiringSolutionSolver mostly unchanged
+  - Only change: pull in tunable values dynamically from NT
+  - logShotResult() tracks hit/miss for each shot, that needs to be figured out
+
+GOAL:
+-----
+  - Stable, adaptive, automatic tuning of desired coefficients between shots 
+  - Micro-adjustments per shot
+  - Big moves early, fine refinements late
+  - System learns; it does not guess
+  - Use bayesian optimization for data driven real time tuning
 
