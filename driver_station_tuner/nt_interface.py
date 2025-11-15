@@ -44,6 +44,17 @@ class ShotData:
     velocity: float
     timestamp: float
     
+    # Additional data captured at shot time
+    yaw: float = 0.0  # Turret yaw angle
+    target_height: float = 0.0  # Target height used
+    launch_height: float = 0.0  # Launch height used
+    
+    # Current coefficient values at time of shot
+    drag_coefficient: float = 0.0
+    air_density: float = 0.0
+    projectile_mass: float = 0.0
+    projectile_area: float = 0.0
+    
     def is_valid(self) -> bool:
         """Check if shot data is valid."""
         return (
@@ -54,7 +65,6 @@ class ShotData:
             and self.distance > 0
             and self.velocity > 0
         )
-
 
 class NetworkTablesInterface:
     """Interface for NetworkTables communication."""
@@ -201,6 +211,12 @@ class NetworkTablesInterface:
         """
         Read the latest shot data from NetworkTables.
         
+        Captures ALL robot state data at the moment of the shot including:
+        - Shot result (hit/miss)
+        - Calculated firing solution (distance, angle, velocity, yaw)
+        - Physical parameters (target height, launch height)
+        - Current coefficient values being used
+        
         Returns:
             ShotData object if new data available, None otherwise
         """
@@ -208,36 +224,62 @@ class NetworkTablesInterface:
             return None
         
         try:
-            # Check if there's new shot data
-            # We detect new shots by monitoring the Hit key's timestamp
+            # Check if there's new shot data by monitoring timestamp
+            shot_timestamp = self.firing_solver_table.getNumber("ShotTimestamp", 0.0)
+            
+            # Only process if this is a new shot
+            if shot_timestamp <= self.last_shot_timestamp:
+                return None
+            
             current_timestamp = time.time()
             
-            # Read shot data
+            # Read shot result (hit or miss)
             hit = self.firing_solver_table.getBoolean("Hit", False)
+            
+            # Read calculated firing solution data
             distance = self.firing_solver_table.getNumber("Distance", 0.0)
             
             # Read from solution subtable
             solution_table = self.firing_solver_table.getSubTable("Solution")
             angle = solution_table.getNumber("pitchRadians", 0.0)
             velocity = solution_table.getNumber("exitVelocity", 0.0)
+            yaw = solution_table.getNumber("yawRadians", 0.0)
             
-            # Create shot data object
+            # Read physical parameters used in calculation
+            target_height = self.firing_solver_table.getNumber("TargetHeight", 0.0)
+            launch_height = self.firing_solver_table.getNumber("LaunchHeight", 0.0)
+            
+            # Read current coefficient values AT TIME OF SHOT
+            drag_coeff = self.firing_solver_table.getNumber("DragCoefficient", 0.0)
+            air_density = self.firing_solver_table.getNumber("AirDensity", 1.225)
+            projectile_mass = self.firing_solver_table.getNumber("ProjectileMass", 0.0)
+            projectile_area = self.firing_solver_table.getNumber("ProjectileArea", 0.0)
+            
+            # Create comprehensive shot data object
             shot_data = ShotData(
                 hit=hit,
                 distance=distance,
                 angle=angle,
                 velocity=velocity,
-                timestamp=current_timestamp
+                timestamp=current_timestamp,
+                yaw=yaw,
+                target_height=target_height,
+                launch_height=launch_height,
+                drag_coefficient=drag_coeff,
+                air_density=air_density,
+                projectile_mass=projectile_mass,
+                projectile_area=projectile_area,
             )
             
-            # Only return if data is valid and seems to be new
-            if shot_data.is_valid() and current_timestamp > self.last_shot_timestamp + 0.5:
-                self.last_shot_timestamp = current_timestamp
-                self.last_shot_data = shot_data
-                logger.debug(f"New shot data: hit={hit}, distance={distance:.2f}, angle={angle:.3f}, velocity={velocity:.2f}")
-                return shot_data
+            # Update tracking
+            self.last_shot_timestamp = shot_timestamp
+            self.last_shot_data = shot_data
             
-            return None
+            logger.info(f"New shot captured: hit={hit}, dist={distance:.2f}m, "
+                       f"angle={angle:.3f}rad, vel={velocity:.2f}m/s, "
+                       f"drag={drag_coeff:.6f}")
+            
+            return shot_data
             
         except Exception as e:
             logger.error(f"Error reading shot data: {e}")
@@ -315,3 +357,40 @@ class NetworkTablesInterface:
                     success = False
         
         return success
+    
+    def write_interlock_settings(self, require_shot_logged: bool, require_coefficients_updated: bool):
+        """
+        Write shooting interlock settings to NetworkTables.
+        
+        Args:
+            require_shot_logged: If True, robot must wait for shot to be logged
+            require_coefficients_updated: If True, robot must wait for coefficient update
+        """
+        if not self.is_connected():
+            return
+        
+        try:
+            interlock_table = NetworkTables.getTable("/FiringSolver/Interlock")
+            interlock_table.putBoolean("RequireShotLogged", require_shot_logged)
+            interlock_table.putBoolean("RequireCoefficientsUpdated", require_coefficients_updated)
+            
+            logger.info(f"Interlock settings: shot_logged={require_shot_logged}, coeff_updated={require_coefficients_updated}")
+        except Exception as e:
+            logger.error(f"Error writing interlock settings: {e}")
+    
+    def signal_coefficients_updated(self):
+        """
+        Signal that coefficients have been updated (clears interlock).
+        
+        Sets the CoefficientsUpdated flag to true, allowing robot to shoot
+        if that interlock is enabled.
+        """
+        if not self.is_connected():
+            return
+        
+        try:
+            interlock_table = NetworkTables.getTable("/FiringSolver/Interlock")
+            interlock_table.putBoolean("CoefficientsUpdated", True)
+            logger.debug("Signaled coefficients updated")
+        except Exception as e:
+            logger.error(f"Error signaling coefficient update: {e}")

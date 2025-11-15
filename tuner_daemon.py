@@ -29,7 +29,12 @@ def load_config_from_file():
     
     # Defaults if no config file
     if not os.path.exists(config_file):
-        return {'enabled': False, 'team_number': 0}
+        return {
+            'enabled': False, 
+            'team_number': 0,
+            'require_shot_logged': False,
+            'require_coefficients_updated': False
+        }
     
     try:
         parser = configparser.ConfigParser()
@@ -38,12 +43,24 @@ def load_config_from_file():
         enabled = parser.getboolean('tuner', 'enabled', fallback=False)
         team_number = parser.getint('tuner', 'team_number', fallback=0)
         
+        # Read shooting interlock settings
+        require_shot_logged = parser.getboolean('shooting_interlocks', 'require_shot_logged', fallback=False)
+        require_coefficients_updated = parser.getboolean('shooting_interlocks', 'require_coefficients_updated', fallback=False)
+        
         return {
             'enabled': enabled,
             'team_number': team_number,
+            'require_shot_logged': require_shot_logged,
+            'require_coefficients_updated': require_coefficients_updated,
         }
-    except:
-        return {'enabled': False, 'team_number': 0}
+    except Exception as e:
+        logging.error(f"Error loading config: {e}")
+        return {
+            'enabled': False, 
+            'team_number': 0,
+            'require_shot_logged': False,
+            'require_coefficients_updated': False
+        }
 
 
 def main():
@@ -82,6 +99,8 @@ def main():
                 break
     
     logger.info(f"Tuner ENABLED - Team {settings['team_number']}")
+    logger.info(f"Interlock settings: require_shot_logged={settings['require_shot_logged']}, "
+               f"require_coefficients_updated={settings['require_coefficients_updated']}")
     
     # Calculate robot IP
     team_number = settings['team_number']
@@ -94,9 +113,11 @@ def main():
     
     logger.info(f"Target robot IP: {server_ip or 'auto-detect'}")
     
-    # Create tuner config
+    # Create tuner config with interlock settings
     config = TunerConfig()
     config.TUNER_ENABLED = True
+    config.REQUIRE_SHOT_LOGGED = settings['require_shot_logged']
+    config.REQUIRE_COEFFICIENTS_UPDATED = settings['require_coefficients_updated']
     if server_ip:
         config.NT_SERVER_IP = server_ip
     

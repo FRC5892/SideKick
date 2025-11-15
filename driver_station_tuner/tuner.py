@@ -86,6 +86,14 @@ class BayesianTunerCoordinator:
         )
         logger.info(f"Initial coefficient values: {self.current_coefficient_values}")
         
+        # Publish interlock settings to robot
+        self.nt_interface.write_interlock_settings(
+            self.config.REQUIRE_SHOT_LOGGED,
+            self.config.REQUIRE_COEFFICIENTS_UPDATED
+        )
+        logger.info(f"Interlock settings published: shot_logged={self.config.REQUIRE_SHOT_LOGGED}, "
+                   f"coeff_updated={self.config.REQUIRE_COEFFICIENTS_UPDATED}")
+        
         # Start tuning thread
         self.running = True
         self.thread = threading.Thread(target=self._tuning_loop, daemon=True)
@@ -232,6 +240,9 @@ class BayesianTunerCoordinator:
                 # Update local tracking
                 self.current_coefficient_values[coeff_name] = new_value
                 logger.info(f"Updated {coeff_name} = {new_value:.6f}")
+                
+                # Signal interlock system that coefficients are updated
+                self.nt_interface.signal_coefficients_updated()
             else:
                 logger.error(f"Failed to write {coeff_name} to NT")
     

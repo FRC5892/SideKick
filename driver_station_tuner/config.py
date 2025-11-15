@@ -53,6 +53,10 @@ class TunerConfig:
     # Match mode detection key (DS_Attached && FMS_Attached)
     NT_MATCH_MODE_KEY: str = "/FMSInfo/FMSControlData"
     
+    # Shooting interlock settings (default: disabled for normal operation)
+    REQUIRE_SHOT_LOGGED: bool = False  # Block shooting until shot is logged
+    REQUIRE_COEFFICIENTS_UPDATED: bool = False  # Block shooting until coefficients update
+    
     # Tuning parameters
     TUNING_ORDER: List[str] = [
         "kDragCoefficient",

@@ -57,7 +57,7 @@ class TunerLogger:
             file_handle = open(self.csv_file, 'w', newline='')
             self.csv_writer = csv.writer(file_handle)
             
-            # Write header row
+            # Write header row - captures ALL robot state at shot time
             headers = [
                 'timestamp',
                 'session_time_s',
@@ -69,6 +69,13 @@ class TunerLogger:
                 'shot_distance',
                 'shot_angle_rad',
                 'shot_velocity_mps',
+                'shot_yaw_rad',
+                'target_height_m',
+                'launch_height_m',
+                'drag_coefficient_used',
+                'air_density_used',
+                'projectile_mass_kg',
+                'projectile_area_m2',
                 'nt_connected',
                 'match_mode',
                 'tuner_status',
@@ -122,7 +129,7 @@ class TunerLogger:
             # Format all coefficients as JSON-like string
             coeff_str = "; ".join([f"{k}={v:.6f}" for k, v in all_coefficient_values.items()])
             
-            # Create row
+            # Create row with ALL captured data
             row = [
                 current_time.isoformat(),
                 f"{session_time:.3f}",
@@ -134,6 +141,13 @@ class TunerLogger:
                 f"{shot_data.distance:.3f}" if shot_data and shot_data.distance else '',
                 f"{shot_data.angle:.6f}" if shot_data and shot_data.angle else '',
                 f"{shot_data.velocity:.3f}" if shot_data and shot_data.velocity else '',
+                f"{shot_data.yaw:.6f}" if shot_data and hasattr(shot_data, 'yaw') else '',
+                f"{shot_data.target_height:.3f}" if shot_data and hasattr(shot_data, 'target_height') else '',
+                f"{shot_data.launch_height:.3f}" if shot_data and hasattr(shot_data, 'launch_height') else '',
+                f"{shot_data.drag_coefficient:.6f}" if shot_data and hasattr(shot_data, 'drag_coefficient') else '',
+                f"{shot_data.air_density:.6f}" if shot_data and hasattr(shot_data, 'air_density') else '',
+                f"{shot_data.projectile_mass:.6f}" if shot_data and hasattr(shot_data, 'projectile_mass') else '',
+                f"{shot_data.projectile_area:.6f}" if shot_data and hasattr(shot_data, 'projectile_area') else '',
                 nt_connected,
                 match_mode,
                 tuner_status,
