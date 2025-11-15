@@ -1,47 +1,66 @@
-# Driver Station Button Mapping for Shot Logging
+# Dashboard Button Guide for Shot Logging
 
-## Easy Shot Result Logging
+## Easy Shot Result Logging via Dashboard
 
-The Bayesian tuner needs to know if each shot hit or missed the target. Drivers can easily log this using the Xbox controller buttons:
+The Bayesian tuner needs to know if each shot hit or missed the target. Drivers can easily log this using **dashboard buttons** in AdvantageScope or Shuffleboard.
 
-### Button Mappings
+### Dashboard Button Locations
 
-| Button | Action | Color Hint |
-|--------|--------|------------|
-| **X** | Log HIT ✅ | Green button (left) |
-| **Y** | Log MISS ❌ | Yellow button (top) |
+In AdvantageScope or Shuffleboard, find these buttons under **FiringSolver**:
+
+| Button Path | Action | When to Click |
+|-------------|--------|---------------|
+| **FiringSolver/LogHit** | Log HIT ✅ | Shot hit the target |
+| **FiringSolver/LogMiss** | Log MISS ❌ | Shot missed the target |
 
 ### How to Use
 
 1. **After each shot**, the driver or coach observes if it hit the target
-2. **Press X** if the shot **HIT** the target
-3. **Press Y** if the shot **MISSED** the target
+2. **Click "LogHit"** in the dashboard if the shot **HIT** the target
+3. **Click "LogMiss"** in the dashboard if the shot **MISSED** the target
 
 That's it! The tuner automatically:
-- Records the shot result
+- Records the shot result via NetworkTables
 - Combines it with distance, angle, and velocity data
 - Uses Bayesian optimization to improve the parameters
 - Updates the robot's shooting coefficients
 
+### Setting Up the Dashboard
+
+#### In AdvantageScope:
+1. Open AdvantageScope and connect to the robot
+2. Navigate to the **NetworkTables** tab
+3. Find **FiringSolver** → **LogHit** and **LogMiss**
+4. These appear as boolean toggles - click to activate
+
+#### In Shuffleboard:
+1. Open Shuffleboard and connect to the robot
+2. Add widgets for:
+   - `NetworkTables/FiringSolver/LogHit` (Toggle Button widget)
+   - `NetworkTables/FiringSolver/LogMiss` (Toggle Button widget)
+3. Click these buttons after each shot
+
 ### Tips for Best Results
 
 - ✅ **Log every shot** - More data = better optimization
-- ✅ **Be accurate** - Only press X if it truly hit
-- ✅ **Press quickly** - Log right after the shot while it's fresh
+- ✅ **Be accurate** - Only click Hit if it truly hit
+- ✅ **Click quickly** - Log right after the shot while it's fresh
 - ✅ **During practice** - This is for practice tuning, not matches
 
-### Why These Buttons?
+### Why Dashboard Buttons?
 
-- **X (green)** = Hit = Positive result = Easy to remember
-- **Y (yellow)** = Miss = Warning/caution = Easy to remember
-- Both buttons are on the right side of the controller, easy to reach
-- Won't interfere with driving buttons (left stick, triggers, bumpers)
+- **Easy access** - Visible on any device running the dashboard
+- **No controller needed** - Works from driver station computer or coach laptop
+- **Multiple people can log** - Driver, coach, or observer can all access
+- **Visual feedback** - Can see when button is pressed in the dashboard
 
 ### Technical Details
 
-When you press these buttons:
-- The button press triggers `FiringSolutionSolver.logShotResult(true/false)`
-- This logs the result to AdvantageKit via NetworkTables
+When you click these buttons:
+- The button state changes in NetworkTables (`FiringSolver/LogHit` or `LogMiss`)
+- `ShotResultLogger` subsystem monitors these buttons in its periodic method
+- When pressed, it calls `FiringSolutionSolver.logShotResult(true/false)`
+- This logs the result to AdvantageKit
 - The Bayesian tuner daemon reads this from NetworkTables
 - The tuner combines shot result with firing parameters
 - Optimization updates happen automatically in the background
@@ -49,6 +68,7 @@ When you press these buttons:
 ### Already Configured
 
 This is already set up in:
-- `src/main/java/frc/robot/outReach/RobotContainer.java` (lines 120-128)
+- `src/main/java/frc/robot/generic/util/ShotResultLogger.java` (button handler)
+- `src/main/java/frc/robot/outReach/RobotContainer.java` (subsystem initialization)
 
-No additional setup needed - just press the buttons!
+No additional setup needed - just click the buttons in your dashboard!
