@@ -98,7 +98,7 @@ Shows:
 **Solution:** Run `pip install -r driver_station_tuner/requirements.txt`
 
 ### "Cannot connect to NetworkTables"
-**Solution:** 
+**Solution:**
 1. Check robot IP in the script
 2. Make sure robot is on and connected
 3. Check that NetworkTables is enabled on robot

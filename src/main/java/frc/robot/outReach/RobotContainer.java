@@ -31,10 +31,9 @@ import frc.robot.generic.util.LoggedDIO.SimDIO;
 import frc.robot.generic.util.LoggedTalon.NoOppTalonFX;
 import frc.robot.generic.util.LoggedTalon.PhoenixTalonFX;
 import frc.robot.generic.util.LoggedTalon.SimpleMotorSim;
-import frc.robot.outReach.subsystems.turret.Turret;
 import frc.robot.generic.util.RobotConfig;
 import frc.robot.generic.util.SwerveBuilder;
-
+import frc.robot.outReach.subsystems.turret.Turret;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -116,6 +115,21 @@ public class RobotContainer implements AbstractRobotContainer {
   private void configureButtonBindings() {
     controller.a().onTrue(shooter.turnToRotationCommand(0.5));
     controller.b().onTrue(shooter.turnToRotationCommand(0));
+
+    // Easy button bindings for Bayesian tuner - log shot results
+    // X button = HIT (green button on Xbox controller)
+    controller
+        .x()
+        .onTrue(
+            edu.wpi.first.wpilibj2.command.Commands.runOnce(
+                () -> frc.robot.generic.util.FiringSolutionSolver.logShotResult(true)));
+
+    // Y button = MISS (yellow button on Xbox controller)
+    controller
+        .y()
+        .onTrue(
+            edu.wpi.first.wpilibj2.command.Commands.runOnce(
+                () -> frc.robot.generic.util.FiringSolutionSolver.logShotResult(false)));
   }
 
   /**

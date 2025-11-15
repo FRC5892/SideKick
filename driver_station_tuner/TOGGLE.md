@@ -25,11 +25,11 @@ Look for line 20:
 ```python
 def main():
     """Main entry point for the tuner."""
-    
+
     # ========== DRIVER CONFIGURATION ==========
     # Set to True to enable tuner, False to disable
     TUNER_ENABLED = True    # ← Change this line!
-    
+
     # Set your team number (e.g., 1234 becomes "10.12.34.2")
     TEAM_NUMBER = 0  # Replace with your team number
 ```
@@ -63,11 +63,11 @@ Even with `TUNER_ENABLED = True`, the tuner **automatically disables** when:
 1. ⚠️ **Match mode detected** (FMS/Field Management System connected)
    - Checks NetworkTables `/FMSInfo/FMSControlData`
    - Pauses tuning during competition matches
-   
+
 2. ⚠️ **NetworkTables disconnects**
    - Loses connection to robot
    - Pauses until connection restored
-   
+
 3. ⚠️ **Too many invalid shots**
    - Data quality too low
    - Safety stop to prevent bad updates

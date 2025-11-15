@@ -216,7 +216,7 @@ class TunerConfig:
         "kDragCoefficient",           # 1st - Most impact on accuracy
         "kAirDensity",                # 2nd - If enabled
         "kVelocityIterationCount",    # 3rd - Computation vs accuracy
-        "kAngleIterationCount",       # 4th - Computation vs accuracy  
+        "kAngleIterationCount",       # 4th - Computation vs accuracy
         "kVelocityTolerance",         # 5th - Fine-tuning
         "kAngleTolerance",            # 6th - Fine-tuning
         "kLaunchHeight",              # 7th - Physical measurement
@@ -306,7 +306,7 @@ In `config.py`:
 class TunerConfig:
     # Enable step size decay
     STEP_SIZE_DECAY_ENABLED: bool = True
-    
+
     # Minimum step size as ratio of initial (0.1 = 10% of initial)
     MIN_STEP_SIZE_RATIO: float = 0.1
 ```
@@ -320,10 +320,10 @@ class TunerConfig:
     # Number of random points before Bayesian optimization starts
     # These help build the initial model
     N_INITIAL_POINTS: int = 5
-    
+
     # Maximum optimization iterations per coefficient
     N_CALLS_PER_COEFFICIENT: int = 20
-    
+
     # Acquisition function: "EI" (Expected Improvement) recommended
     # Other options: "LCB" (Lower Confidence Bound), "PI" (Probability of Improvement)
     ACQUISITION_FUNCTION: str = "EI"
@@ -354,7 +354,7 @@ class TunerConfig:
 class TunerConfig:
     # Minimum shots to accumulate before updating optimizer
     MIN_VALID_SHOTS_BEFORE_UPDATE: int = 3
-    
+
     # Maximum consecutive invalid shots before stopping
     MAX_CONSECUTIVE_INVALID_SHOTS: int = 5
 ```
@@ -431,7 +431,7 @@ All values are automatically clamped to valid ranges:
 
 ```python
 # Invalid value
-suggested_value = 10.0  
+suggested_value = 10.0
 
 # Automatically clamped
 actual_value = config.clamp(suggested_value)  # -> 0.006 (max)
@@ -501,13 +501,13 @@ class MyTeamConfig(TunerConfig):
     TEAM_NUMBER = 1234
     NT_SERVER_IP = "10.12.34.2"
     LOG_DIRECTORY = "./logs/tuner"
-    
+
     # Custom tuning order
     TUNING_ORDER = [
         "kDragCoefficient",
         "kLaunchHeight",
     ]
-    
+
     # Faster convergence
     N_CALLS_PER_COEFFICIENT = 15
     MIN_STEP_SIZE_RATIO = 0.05

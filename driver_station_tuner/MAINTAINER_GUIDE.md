@@ -254,20 +254,20 @@ while self.running:
     # 1. Check safety
     if not self._check_safety_conditions():
         continue
-    
+
     # 2. Read new shots
     shot_data = self.nt_interface.read_shot_data()
-    
+
     # 3. Process if available
     if shot_data:
         self._process_shot(shot_data)
-    
+
     # 4. Update coefficients
     self._update_coefficients()
-    
+
     # 5. Update status
     self._update_status()
-    
+
     # 6. Sleep
     time.sleep(update_period)
 ```
@@ -353,10 +353,10 @@ class BayesianOptimizer:
     def __init__(self, coeff_config, tuner_config):
         # Your custom optimizer here
         self.my_optimizer = MyCustomOptimizer(...)
-    
+
     def suggest_next_value(self):
         return self.my_optimizer.suggest()
-    
+
     def report_result(self, value, hit):
         self.my_optimizer.update(value, hit)
 ```
@@ -410,17 +410,17 @@ from driver_station_tuner.my_module import MyClass
 
 class TestMyClass(unittest.TestCase):
     """Test MyClass functionality."""
-    
+
     def setUp(self):
         """Set up test fixtures."""
         self.config = TunerConfig()
         self.my_instance = MyClass(self.config)
-    
+
     def test_my_feature(self):
         """Test my feature works correctly."""
         result = self.my_instance.do_something()
         self.assertEqual(result, expected_value)
-    
+
     def tearDown(self):
         """Clean up after test."""
         pass
@@ -486,17 +486,17 @@ setup_logging(config, log_level=logging.DEBUG)  # ← Change to DEBUG
 def my_function(param1: str, param2: int) -> bool:
     """
     Brief description of function.
-    
+
     More detailed explanation if needed.
     Can span multiple lines.
-    
+
     Args:
         param1: Description of param1
         param2: Description of param2
-    
+
     Returns:
         Description of return value
-    
+
     Raises:
         ValueError: When something is wrong
     """

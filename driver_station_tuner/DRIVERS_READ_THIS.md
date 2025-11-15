@@ -68,7 +68,7 @@ To stop: Press **Ctrl+C**
 
 The tuner will:
 - ✅ Connect automatically
-- ✅ Start tuning automatically  
+- ✅ Start tuning automatically
 - ✅ Save logs automatically
 - ✅ Stop during matches automatically
 
