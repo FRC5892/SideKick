@@ -1,23 +1,59 @@
 # Dashboard Button Guide for Shot Logging
 
-## Easy Shot Result Logging via Dashboard
+## 🎯 Quick Start - Which Button is Which?
 
-The Bayesian tuner needs to know if each shot hit or missed the target. Drivers can easily log this using **dashboard buttons** in AdvantageScope or Shuffleboard.
+| Button Name | When to Click | Color | Location |
+|-------------|---------------|-------|----------|
+| **LogHit** | Shot HIT the target ✅ | 🟢 GREEN | FiringSolver/LogHit |
+| **LogMiss** | Shot MISSED the target ❌ | 🔴 RED | FiringSolver/LogMiss |
 
-### Dashboard Button Locations
+**Simple rule: Hit = LogHit, Miss = LogMiss. That's it!**
 
-In AdvantageScope or Shuffleboard, find these buttons under **FiringSolver**:
+---
 
-| Button Path | Action | When to Click |
-|-------------|--------|---------------|
-| **FiringSolver/LogHit** | Log HIT ✅ | Shot hit the target |
-| **FiringSolver/LogMiss** | Log MISS ❌ | Shot missed the target |
+## 📱 Finding the Buttons (Step-by-Step)
 
-### How to Use
+### In AdvantageScope (Recommended for Drivers)
 
-1. **After each shot**, the driver or coach observes if it hit the target
-2. **Click "LogHit"** in the dashboard if the shot **HIT** the target
-3. **Click "LogMiss"** in the dashboard if the shot **MISSED** the target
+**Step 1:** Open AdvantageScope and connect to your robot
+
+**Step 2:** Click the **"NetworkTables"** tab on the left side
+
+**Step 3:** Look for the **"FiringSolver"** folder and expand it
+
+**Step 4:** You'll see:
+```
+📁 FiringSolver/
+   ├── 🔘 LogHit    ← HIT button (click when shot hits)
+   ├── 🔘 LogMiss   ← MISS button (click when shot misses)
+   └── ... (other robot data)
+```
+
+**Step 5:** Click the button that matches what happened:
+- Shot hit? Click **LogHit**
+- Shot missed? Click **LogMiss**
+
+The button will flash and reset automatically - you're done!
+
+### In Shuffleboard (Good for Custom Layouts)
+
+**Step 1:** Open Shuffleboard and connect to your robot
+
+**Step 2:** Right-click on your layout → **"Add..."** → **"NetworkTables"**
+
+**Step 3:** Find and add these two entries:
+- `FiringSolver/LogHit` → Choose **"Toggle Button"** widget
+- `FiringSolver/LogMiss` → Choose **"Toggle Button"** widget  
+
+**Step 4:** Customize for clarity (IMPORTANT!)
+- **LogHit button**: Set background color to **GREEN** (#00FF00)
+- **LogMiss button**: Set background color to **RED** (#FF0000)
+- **Make them LARGE** - At least 100x100 pixels each
+- **Add text labels** - "✅ HIT" and "❌ MISS"
+
+**Step 5:** Arrange side-by-side for quick access
+
+**Step 6:** Save your layout! (**File → Save Layout**)
 
 That's it! The tuner automatically:
 - Records the shot result via NetworkTables
