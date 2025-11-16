@@ -1,12 +1,18 @@
 """
 Configuration module for the FRC Shooter Bayesian Tuner.
 
-This module defines all tunable coefficients, their ranges, tuning order,
-and system-wide settings for the Bayesian optimization tuner.
+This module loads configuration from two simple files:
+1. TUNER_TOGGLES.ini - Three main on/off switches
+2. COEFFICIENT_TUNING.py - What to tune, how much, in what order
+
+NO NEED TO EDIT THIS FILE - edit the files above instead!
 """
 
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from typing import Dict, List
+import os
+import configparser
+import importlib.util
 
 
 @dataclass
@@ -32,167 +38,159 @@ class CoefficientConfig:
 
 
 class TunerConfig:
-    """Global configuration for the Bayesian tuner system."""
+    """
+    Global configuration for the Bayesian tuner system.
     
-    # Master enable/disable toggle
-    TUNER_ENABLED: bool = True
+    Loads settings from:
+    - TUNER_TOGGLES.ini (main on/off switches)
+    - COEFFICIENT_TUNING.py (coefficient definitions and tuning order)
+    """
     
-    # NetworkTables configuration
-    NT_SERVER_IP: str = "10.TE.AM.2"  # Replace TE.AM with your team number
-    NT_TIMEOUT_SECONDS: float = 5.0
-    NT_RECONNECT_DELAY_SECONDS: float = 2.0
+    def __init__(self):
+        """Initialize configuration by loading from files."""
+        # Load toggle settings from TUNER_TOGGLES.ini
+        self._load_toggles()
+        
+        # Load coefficient configuration from COEFFICIENT_TUNING.py
+        self._load_coefficient_config()
+        
+        # Initialize other settings
+        self._initialize_constants()
     
-    # NetworkTables keys for shot data
-    NT_SHOT_DATA_TABLE: str = "/FiringSolver"
-    NT_SHOT_HIT_KEY: str = "/FiringSolver/Hit"
-    NT_SHOT_DISTANCE_KEY: str = "/FiringSolver/Distance"
-    NT_SHOT_ANGLE_KEY: str = "/FiringSolver/Solution/pitchRadians"
-    NT_SHOT_VELOCITY_KEY: str = "/FiringSolver/Solution/exitVelocity"
-    NT_TUNER_STATUS_KEY: str = "/FiringSolver/TunerStatus"
+    def _load_toggles(self):
+        """Load the three main toggles from TUNER_TOGGLES.ini"""
+        # Find the toggles file (in parent directory of driver_station_tuner)
+        module_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(module_dir)
+        toggles_file = os.path.join(parent_dir, "TUNER_TOGGLES.ini")
+        
+        config = configparser.ConfigParser()
+        config.read(toggles_file)
+        
+        # Load main controls
+        self.TUNER_ENABLED = config.getboolean('main_controls', 'tuner_enabled', fallback=True)
+        self.REQUIRE_SHOT_LOGGED = config.getboolean('main_controls', 'require_shot_logged', fallback=False)
+        self.REQUIRE_COEFFICIENTS_UPDATED = config.getboolean('main_controls', 'require_coefficients_updated', fallback=False)
+        
+        # Load team number and calculate robot IP
+        team_number = config.getint('team', 'team_number', fallback=5892)
+        self.NT_SERVER_IP = f"10.{team_number // 100}.{team_number % 100}.2"
     
-    # Match mode detection key (DS_Attached && FMS_Attached)
-    NT_MATCH_MODE_KEY: str = "/FMSInfo/FMSControlData"
+    def _load_coefficient_config(self):
+        """Load coefficient definitions from COEFFICIENT_TUNING.py"""
+        # Find the coefficient config file
+        module_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(module_dir)
+        coeff_file = os.path.join(parent_dir, "COEFFICIENT_TUNING.py")
+        
+        # Load as module
+        spec = importlib.util.spec_from_file_location("coeff_config", coeff_file)
+        coeff_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(coeff_module)
+        
+        # Load tuning order
+        self.TUNING_ORDER = coeff_module.TUNING_ORDER
+        
+        # Convert coefficient dicts to CoefficientConfig objects
+        self.COEFFICIENTS = {}
+        for name, cfg in coeff_module.COEFFICIENTS.items():
+            self.COEFFICIENTS[name] = CoefficientConfig(
+                name=name,
+                default_value=cfg['default_value'],
+                min_value=cfg['min_value'],
+                max_value=cfg['max_value'],
+                initial_step_size=cfg['initial_step_size'],
+                step_decay_rate=cfg['step_decay_rate'],
+                is_integer=cfg['is_integer'],
+                enabled=cfg['enabled'],
+                nt_key=cfg['nt_key'],
+            )
+        
+        # Load optimization settings
+        self.N_INITIAL_POINTS = coeff_module.N_INITIAL_POINTS
+        self.N_CALLS_PER_COEFFICIENT = coeff_module.N_CALLS_PER_COEFFICIENT
+        
+        # Load RoboRIO protection settings
+        self.MAX_NT_WRITE_RATE_HZ = coeff_module.MAX_WRITE_RATE_HZ
+        self.MAX_NT_READ_RATE_HZ = coeff_module.MAX_READ_RATE_HZ
+        self.NT_BATCH_WRITES = coeff_module.BATCH_WRITES
+        
+        # Load physical limits
+        self.PHYSICAL_MAX_VELOCITY_MPS = coeff_module.PHYSICAL_MAX_VELOCITY_MPS
+        self.PHYSICAL_MIN_VELOCITY_MPS = coeff_module.PHYSICAL_MIN_VELOCITY_MPS
+        self.PHYSICAL_MAX_ANGLE_RAD = coeff_module.PHYSICAL_MAX_ANGLE_RAD
+        self.PHYSICAL_MIN_ANGLE_RAD = coeff_module.PHYSICAL_MIN_ANGLE_RAD
+        self.PHYSICAL_MAX_DISTANCE_M = coeff_module.PHYSICAL_MAX_DISTANCE_M
+        self.PHYSICAL_MIN_DISTANCE_M = coeff_module.PHYSICAL_MIN_DISTANCE_M
     
-    # Shooting interlock settings (default: disabled for normal operation)
-    REQUIRE_SHOT_LOGGED: bool = False  # Block shooting until shot is logged
-    REQUIRE_COEFFICIENTS_UPDATED: bool = False  # Block shooting until coefficients update
+    def _initialize_constants(self):
+        """Initialize constants that don't come from config files."""
+        # NetworkTables configuration
+        self.NT_TIMEOUT_SECONDS = 5.0
+        self.NT_RECONNECT_DELAY_SECONDS = 2.0
+        
+        # NetworkTables keys for shot data
+        self.NT_SHOT_DATA_TABLE = "/FiringSolver"
+        self.NT_SHOT_HIT_KEY = "/FiringSolver/Hit"
+        self.NT_SHOT_DISTANCE_KEY = "/FiringSolver/Distance"
+        self.NT_SHOT_ANGLE_KEY = "/FiringSolver/Solution/pitchRadians"
+        self.NT_SHOT_VELOCITY_KEY = "/FiringSolver/Solution/exitVelocity"
+        self.NT_TUNER_STATUS_KEY = "/FiringSolver/TunerStatus"
+        
+        # Match mode detection key
+        self.NT_MATCH_MODE_KEY = "/FMSInfo/FMSControlData"
+        
+        # Bayesian optimization settings
+        self.ACQUISITION_FUNCTION = "EI"  # Expected Improvement
+        
+        # Safety and validation
+        self.MIN_VALID_SHOTS_BEFORE_UPDATE = 3
+        self.MAX_CONSECUTIVE_INVALID_SHOTS = 5
+        self.ABNORMAL_READING_THRESHOLD = 3.0  # Standard deviations
+        
+        # Logging configuration
+        self.LOG_DIRECTORY = "./tuner_logs"
+        self.LOG_FILENAME_PREFIX = "bayesian_tuner"
+        self.LOG_TO_CONSOLE = True
+        
+        # Threading configuration
+        self.TUNER_UPDATE_RATE_HZ = 10.0  # How often to check for new data
+        self.GRACEFUL_SHUTDOWN_TIMEOUT_SECONDS = 5.0
+        
+        # Step size decay configuration
+        self.STEP_SIZE_DECAY_ENABLED = True
+        self.MIN_STEP_SIZE_RATIO = 0.1  # Minimum step size as ratio of initial
     
-    # Tuning parameters
-    TUNING_ORDER: List[str] = [
-        "kDragCoefficient",
-        "kAirDensity",
-        "kVelocityIterationCount",
-        "kAngleIterationCount",
-        "kVelocityTolerance",
-        "kAngleTolerance",
-        "kLaunchHeight",
-    ]
-    
-    # Bayesian optimization settings
-    N_INITIAL_POINTS: int = 5  # Random points before Bayesian optimization starts
-    N_CALLS_PER_COEFFICIENT: int = 20  # Max optimization iterations per coefficient
-    ACQUISITION_FUNCTION: str = "EI"  # Expected Improvement
-    
-    # Safety and validation
-    MIN_VALID_SHOTS_BEFORE_UPDATE: int = 3
-    MAX_CONSECUTIVE_INVALID_SHOTS: int = 5
-    ABNORMAL_READING_THRESHOLD: float = 3.0  # Standard deviations
-    
-    # Logging configuration
-    LOG_DIRECTORY: str = "./tuner_logs"
-    LOG_FILENAME_PREFIX: str = "bayesian_tuner"
-    LOG_TO_CONSOLE: bool = True
-    
-    # Threading configuration
-    TUNER_UPDATE_RATE_HZ: float = 10.0  # How often to check for new data
-    GRACEFUL_SHUTDOWN_TIMEOUT_SECONDS: float = 5.0
-    
-    # Step size decay configuration
-    STEP_SIZE_DECAY_ENABLED: bool = True
-    MIN_STEP_SIZE_RATIO: float = 0.1  # Minimum step size as ratio of initial
-    
-    # Coefficient definitions
-    COEFFICIENTS: Dict[str, CoefficientConfig] = {
-        "kDragCoefficient": CoefficientConfig(
-            name="kDragCoefficient",
-            default_value=0.003,
-            min_value=0.001,
-            max_value=0.006,
-            initial_step_size=0.001,
-            step_decay_rate=0.9,
-            is_integer=False,
-            enabled=True,
-            nt_key="/Tuning/FiringSolver/DragCoefficient",
-        ),
-        "kAirDensity": CoefficientConfig(
-            name="kAirDensity",
-            default_value=1.225,
-            min_value=1.10,
-            max_value=1.30,
-            initial_step_size=0.05,
-            step_decay_rate=0.9,
-            is_integer=False,
-            enabled=False,  # Air density is constant in FiringSolutionSolver (1.225)
-            nt_key="/Tuning/FiringSolver/AirDensity",
-        ),
-        "kVelocityIterationCount": CoefficientConfig(
-            name="kVelocityIterationCount",
-            default_value=20,
-            min_value=10,
-            max_value=50,
-            initial_step_size=5,
-            step_decay_rate=0.85,
-            is_integer=True,
-            enabled=True,
-            nt_key="/Tuning/FiringSolver/VelocityIterations",
-        ),
-        "kAngleIterationCount": CoefficientConfig(
-            name="kAngleIterationCount",
-            default_value=20,
-            min_value=10,
-            max_value=50,
-            initial_step_size=5,
-            step_decay_rate=0.85,
-            is_integer=True,
-            enabled=True,
-            nt_key="/Tuning/FiringSolver/AngleIterations",
-        ),
-        "kVelocityTolerance": CoefficientConfig(
-            name="kVelocityTolerance",
-            default_value=0.01,
-            min_value=0.005,
-            max_value=0.05,
-            initial_step_size=0.005,
-            step_decay_rate=0.9,
-            is_integer=False,
-            enabled=True,
-            nt_key="/Tuning/FiringSolver/VelocityTolerance",
-        ),
-        "kAngleTolerance": CoefficientConfig(
-            name="kAngleTolerance",
-            default_value=0.0001,
-            min_value=0.00001,
-            max_value=0.001,
-            initial_step_size=0.0001,
-            step_decay_rate=0.9,
-            is_integer=False,
-            enabled=True,
-            nt_key="/Tuning/FiringSolver/AngleTolerance",
-        ),
-        "kLaunchHeight": CoefficientConfig(
-            name="kLaunchHeight",
-            default_value=0.8,
-            min_value=0.75,
-            max_value=0.85,
-            initial_step_size=0.01,
-            step_decay_rate=0.9,
-            is_integer=False,
-            enabled=True,
-            nt_key="/Tuning/FiringSolver/LaunchHeight",
-        ),
-    }
-    
-    @classmethod
-    def get_enabled_coefficients_in_order(cls) -> List[CoefficientConfig]:
+    def get_enabled_coefficients_in_order(self) -> List[CoefficientConfig]:
         """Get list of enabled coefficients in tuning order."""
         return [
-            cls.COEFFICIENTS[name]
-            for name in cls.TUNING_ORDER
-            if name in cls.COEFFICIENTS and cls.COEFFICIENTS[name].enabled
+            self.COEFFICIENTS[name]
+            for name in self.TUNING_ORDER
+            if name in self.COEFFICIENTS and self.COEFFICIENTS[name].enabled
         ]
     
-    @classmethod
-    def validate_config(cls) -> List[str]:
-        """Validate configuration and return list of warnings/errors."""
+    def validate_config(self) -> List[str]:
+        """
+        Validate configuration and return list of warnings.
+        
+        Returns:
+            List of warning messages (empty if no issues)
+        """
         warnings = []
         
-        # Check that all coefficients in tuning order exist
-        for name in cls.TUNING_ORDER:
-            if name not in cls.COEFFICIENTS:
-                warnings.append(f"Coefficient '{name}' in TUNING_ORDER not found in COEFFICIENTS")
+        # Check that enabled coefficients are in tuning order
+        enabled_coeffs = [name for name, cfg in self.COEFFICIENTS.items() if cfg.enabled]
+        for name in enabled_coeffs:
+            if name not in self.TUNING_ORDER:
+                warnings.append(f"Enabled coefficient '{name}' not in TUNING_ORDER")
         
-        # Check coefficient configurations
-        for name, coeff in cls.COEFFICIENTS.items():
+        # Check for coefficients in tuning order that don't exist
+        for name in self.TUNING_ORDER:
+            if name not in self.COEFFICIENTS:
+                warnings.append(f"Coefficient '{name}' in TUNING_ORDER but not defined")
+        
+        # Validate coefficient configurations
+        for name, coeff in self.COEFFICIENTS.items():
             if coeff.min_value >= coeff.max_value:
                 warnings.append(f"{name}: min_value must be < max_value")
             
@@ -205,14 +203,24 @@ class TunerConfig:
             if not 0 < coeff.step_decay_rate <= 1.0:
                 warnings.append(f"{name}: step_decay_rate must be in (0, 1]")
         
-        # Check system parameters
-        if cls.N_INITIAL_POINTS < 1:
+        # Validate physical limits make sense
+        if self.PHYSICAL_MIN_VELOCITY_MPS >= self.PHYSICAL_MAX_VELOCITY_MPS:
+            warnings.append("PHYSICAL_MIN_VELOCITY_MPS >= PHYSICAL_MAX_VELOCITY_MPS")
+        
+        if self.PHYSICAL_MIN_ANGLE_RAD >= self.PHYSICAL_MAX_ANGLE_RAD:
+            warnings.append("PHYSICAL_MIN_ANGLE_RAD >= PHYSICAL_MAX_ANGLE_RAD")
+        
+        if self.PHYSICAL_MIN_DISTANCE_M >= self.PHYSICAL_MAX_DISTANCE_M:
+            warnings.append("PHYSICAL_MIN_DISTANCE_M >= PHYSICAL_MAX_DISTANCE_M")
+        
+        # Validate system parameters
+        if self.N_INITIAL_POINTS < 1:
             warnings.append("N_INITIAL_POINTS must be >= 1")
         
-        if cls.N_CALLS_PER_COEFFICIENT < cls.N_INITIAL_POINTS:
+        if self.N_CALLS_PER_COEFFICIENT < self.N_INITIAL_POINTS:
             warnings.append("N_CALLS_PER_COEFFICIENT must be >= N_INITIAL_POINTS")
         
-        if cls.TUNER_UPDATE_RATE_HZ <= 0:
+        if self.TUNER_UPDATE_RATE_HZ <= 0:
             warnings.append("TUNER_UPDATE_RATE_HZ must be positive")
         
         return warnings

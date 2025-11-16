@@ -55,31 +55,50 @@ class ShotData:
     projectile_mass: float = 0.0
     projectile_area: float = 0.0
     
-    def is_valid(self) -> bool:
-        """Check if shot data is valid."""
+    def is_valid(self, config) -> bool:
+        """
+        Check if shot data is valid and within physical limits.
+        
+        Args:
+            config: TunerConfig with physical limit constants
+            
+        Returns:
+            True if shot data is valid and physically reasonable
+        """
         return (
             isinstance(self.hit, bool)
             and isinstance(self.distance, (int, float))
             and isinstance(self.angle, (int, float))
             and isinstance(self.velocity, (int, float))
-            and self.distance > 0
-            and self.velocity > 0
+            # Distance bounds check (field geometry)
+            and config.PHYSICAL_MIN_DISTANCE_M <= self.distance <= config.PHYSICAL_MAX_DISTANCE_M
+            # Velocity bounds check (motor/mechanism physical limits)
+            and config.PHYSICAL_MIN_VELOCITY_MPS <= self.velocity <= config.PHYSICAL_MAX_VELOCITY_MPS
+            # Angle bounds check (mechanism physical limits)
+            and config.PHYSICAL_MIN_ANGLE_RAD <= self.angle <= config.PHYSICAL_MAX_ANGLE_RAD
         )
 
 class NetworkTablesInterface:
-    """Interface for NetworkTables communication."""
+    """Interface for NetworkTables communication with RoboRIO protection."""
     
     def __init__(self, config):
         """
-        Initialize NetworkTables interface.
+        Initialize NetworkTables interface with rate limiting.
         
         Args:
-            config: TunerConfig instance with NT settings
+            config: TunerConfig instance with NT settings and rate limits
         """
         self.config = config
         self.connected = False
         self.last_connection_attempt = 0.0
         self.shot_data_listeners = []
+        
+        # Rate limiting to prevent RoboRIO overload
+        self.last_write_time = 0.0
+        self.min_write_interval = 1.0 / config.MAX_NT_WRITE_RATE_HZ
+        self.last_read_time = 0.0
+        self.min_read_interval = 1.0 / config.MAX_NT_READ_RATE_HZ
+        self.pending_writes = {}  # For batching writes if enabled
         
         # Tables
         self.root_table = None
@@ -90,7 +109,9 @@ class NetworkTablesInterface:
         self.last_shot_timestamp = 0.0
         self.last_shot_data: Optional[ShotData] = None
         
-        logger.info("NetworkTables interface initialized")
+        logger.info("NetworkTables interface initialized with rate limiting")
+        logger.info(f"Write rate limit: {config.MAX_NT_WRITE_RATE_HZ} Hz, "
+                   f"Read rate limit: {config.MAX_NT_READ_RATE_HZ} Hz")
     
     def connect(self, server_ip: Optional[str] = None) -> bool:
         """
@@ -182,13 +203,16 @@ class NetworkTablesInterface:
             logger.error(f"Error reading {nt_key}: {e}")
             return default_value
     
-    def write_coefficient(self, nt_key: str, value: float) -> bool:
+    def write_coefficient(self, nt_key: str, value: float, force: bool = False) -> bool:
         """
-        Write a coefficient value to NetworkTables.
+        Write a coefficient value to NetworkTables with rate limiting.
+        
+        Protects RoboRIO from being overloaded with too frequent updates.
         
         Args:
             nt_key: NetworkTables key path
-            value: Value to write
+            value: Coefficient value to write
+            force: If True, bypass rate limiting (use sparingly)
         
         Returns:
             True if write succeeded, False otherwise
@@ -197,20 +221,55 @@ class NetworkTablesInterface:
             logger.warning(f"Not connected, cannot write {nt_key}")
             return False
         
+        # Rate limiting check (unless forced)
+        current_time = time.time()
+        if not force:
+            time_since_last_write = current_time - self.last_write_time
+            if time_since_last_write < self.min_write_interval:
+                # Too soon, queue for batching if enabled
+                if self.config.NT_BATCH_WRITES:
+                    self.pending_writes[nt_key] = value
+                    logger.debug(f"Queueing write for {nt_key} due to rate limit")
+                    return False
+                else:
+                    logger.debug(f"Skipping write for {nt_key} due to rate limit")
+                    return False
+        
         try:
-            # Remove '/Tuning' prefix if present since we're using tuning_table
-            key = nt_key.replace("/Tuning/", "")
-            self.tuning_table.putNumber(key, value)
-            logger.debug(f"Wrote {key} = {value}")
+            self.tuning_table.putNumber(nt_key, value)
+            self.last_write_time = current_time
+            logger.info(f"Wrote {nt_key} = {value}")
             return True
         except Exception as e:
             logger.error(f"Error writing {nt_key}: {e}")
             return False
     
+    def flush_pending_writes(self) -> int:
+        """
+        Flush any pending batched writes to NetworkTables.
+        
+        Returns:
+            Number of writes flushed
+        """
+        if not self.pending_writes:
+            return 0
+        
+        count = 0
+        for nt_key, value in list(self.pending_writes.items()):
+            if self.write_coefficient(nt_key, value, force=True):
+                count += 1
+                del self.pending_writes[nt_key]
+        
+        if count > 0:
+            logger.info(f"Flushed {count} batched writes to NetworkTables")
+        
+        return count
+    
     def read_shot_data(self) -> Optional[ShotData]:
         """
-        Read the latest shot data from NetworkTables.
+        Read the latest shot data from NetworkTables with rate limiting.
         
+        Protects RoboRIO from excessive read requests.
         Captures ALL robot state data at the moment of the shot including:
         - Shot result (hit/miss)
         - Calculated firing solution (distance, angle, velocity, yaw)
@@ -223,6 +282,14 @@ class NetworkTablesInterface:
         if not self.is_connected():
             return None
         
+        # Rate limiting check
+        current_time = time.time()
+        time_since_last_read = current_time - self.last_read_time
+        if time_since_last_read < self.min_read_interval:
+            return None  # Skip read to avoid overloading RoboRIO
+        
+        self.last_read_time = current_time
+        
         try:
             # Check if there's new shot data by monitoring timestamp
             shot_timestamp = self.firing_solver_table.getNumber("ShotTimestamp", 0.0)
@@ -230,8 +297,6 @@ class NetworkTablesInterface:
             # Only process if this is a new shot
             if shot_timestamp <= self.last_shot_timestamp:
                 return None
-            
-            current_timestamp = time.time()
             
             # Read shot result (hit or miss)
             hit = self.firing_solver_table.getBoolean("Hit", False)
