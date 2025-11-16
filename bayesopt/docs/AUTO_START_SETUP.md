@@ -198,7 +198,7 @@ Drivers never need to look at these. Programmers can review.
 **Daemon not starting?**
 - Check auto-start is configured correctly
 - Check Python is in PATH
-- Check dependencies installed: `pip install -r driver_station_tuner/requirements.txt`
+- Check dependencies installed: `pip install -r bayesopt/tuner/requirements.txt`
 
 **Tuner not running?**
 - Check `enabled = True` in config

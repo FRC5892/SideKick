@@ -171,7 +171,7 @@ SideKick/
 ├── AUTO_START_SETUP.md           # ← Setup instructions
 ├── DRIVERS_START_HERE.md         # ← Driver docs
 │
-└── driver_station_tuner/
+└── bayesopt/tuner/
     ├── config.py                 # All settings
     ├── nt_interface.py           # NetworkTables
     ├── optimizer.py              # Bayesian optimization
@@ -206,7 +206,7 @@ pandas>=1.3.0  # Optional: data analysis
 
 Install:
 ```bash
-pip install -r driver_station_tuner/requirements.txt
+pip install -r bayesopt/tuner/requirements.txt
 ```
 
 ---
@@ -215,7 +215,7 @@ pip install -r driver_station_tuner/requirements.txt
 
 ```bash
 # Run all tests
-python driver_station_tuner/run_tests.py
+python bayesopt/tuner/run_tests.py
 
 # Test daemon
 python tuner_daemon.py
@@ -255,7 +255,7 @@ log_to_console = True          # Debug output
 5. kAngleTolerance (0.00001-0.001)
 6. kLaunchHeight (0.75-0.85m)
 
-Easy to modify in `driver_station_tuner/config.py`
+Easy to modify in `bayesopt/tuner/config.py`
 
 ---
 

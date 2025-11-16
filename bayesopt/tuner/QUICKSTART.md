@@ -5,7 +5,7 @@
 ### Step 1: Install Dependencies
 
 ```bash
-pip install -r driver_station_tuner/requirements.txt
+pip install -r bayesopt/tuner/requirements.txt
 ```
 
 ### Step 2: Configure
@@ -86,7 +86,7 @@ log_directory = ./tuner_logs
 log_to_console = True
 ```
 
-Advanced coefficient settings in `driver_station_tuner/config.py`
+Advanced coefficient settings in `bayesopt/tuner/config.py`
 
 ---
 

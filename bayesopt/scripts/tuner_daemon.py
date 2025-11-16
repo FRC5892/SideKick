@@ -16,10 +16,12 @@ import os
 import time
 import configparser
 
-# Add to path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Add parent directory (bayesopt) to path to import tuner module
+script_dir = os.path.dirname(os.path.abspath(__file__))
+bayesopt_dir = os.path.dirname(script_dir)
+sys.path.insert(0, bayesopt_dir)
 
-from driver_station_tuner import BayesianTunerCoordinator, TunerConfig, setup_logging
+from tuner import BayesianTunerCoordinator, TunerConfig, setup_logging
 import logging
 
 

@@ -171,8 +171,8 @@ DASHBOARD_BUTTON_GUIDE.md → Visual guide for drivers
 - ✅ AUTO_START_SETUP.md - Setup for each OS
 
 ### ✅ Developer Documentation
-- ✅ driver_station_tuner/README.md - Technical details
-- ✅ driver_station_tuner/MAINTAINER_GUIDE.md - Code architecture
+- ✅ bayesopt/tuner/README.md - Technical details
+- ✅ bayesopt/tuner/MAINTAINER_GUIDE.md - Code architecture
 - ✅ Docstrings on all public methods
 - ✅ Inline comments explaining complex logic
 

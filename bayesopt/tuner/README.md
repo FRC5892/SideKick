@@ -113,7 +113,7 @@ All tuning parameters are centralized in `driver_station_tuner/config.py`. The `
 Edit these in `config.py` or override in your run script:
 
 ```python
-from driver_station_tuner import TunerConfig
+from tuner import TunerConfig
 
 config = TunerConfig()
 
@@ -494,7 +494,7 @@ Press `Ctrl+C` for graceful shutdown:
 Create a custom config class:
 
 ```python
-from driver_station_tuner import TunerConfig
+from tuner import TunerConfig
 
 class MyTeamConfig(TunerConfig):
     # Override defaults
@@ -513,14 +513,14 @@ class MyTeamConfig(TunerConfig):
     MIN_STEP_SIZE_RATIO = 0.05
 
 # Use it
-from driver_station_tuner import run_tuner
+from tuner import run_tuner
 run_tuner(config=MyTeamConfig())
 ```
 
 ### Programmatic Control
 
 ```python
-from driver_station_tuner import BayesianTunerCoordinator, TunerConfig
+from tuner import BayesianTunerCoordinator, TunerConfig
 
 config = TunerConfig()
 tuner = BayesianTunerCoordinator(config)

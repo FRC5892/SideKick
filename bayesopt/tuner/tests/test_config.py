@@ -3,7 +3,7 @@ Unit tests for the configuration module.
 """
 
 import unittest
-from driver_station_tuner.config import TunerConfig, CoefficientConfig
+from tuner.config import TunerConfig, CoefficientConfig
 
 
 class TestCoefficientConfig(unittest.TestCase):

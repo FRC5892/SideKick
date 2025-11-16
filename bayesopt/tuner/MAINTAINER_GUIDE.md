@@ -405,8 +405,8 @@ python -m unittest driver_station_tuner.tests.test_optimizer.TestBayesianOptimiz
 **Template:**
 ```python
 import unittest
-from driver_station_tuner.config import TunerConfig
-from driver_station_tuner.my_module import MyClass
+from tuner.config import TunerConfig
+from tuner.my_module import MyClass
 
 class TestMyClass(unittest.TestCase):
     """Test MyClass functionality."""
@@ -447,7 +447,7 @@ class TestMyClass(unittest.TestCase):
 ```python
 # In START_TUNER.py or run_tuner.py
 import logging
-from driver_station_tuner.logger import setup_logging
+from tuner.logger import setup_logging
 
 config = TunerConfig()
 setup_logging(config, log_level=logging.DEBUG)  # ← Change to DEBUG

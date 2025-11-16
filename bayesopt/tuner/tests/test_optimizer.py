@@ -6,9 +6,9 @@ import unittest
 from unittest.mock import Mock, patch
 import numpy as np
 
-from driver_station_tuner.config import TunerConfig, CoefficientConfig
-from driver_station_tuner.optimizer import BayesianOptimizer, CoefficientTuner
-from driver_station_tuner.nt_interface import ShotData
+from tuner.config import TunerConfig, CoefficientConfig
+from tuner.optimizer import BayesianOptimizer, CoefficientTuner
+from tuner.nt_interface import ShotData
 
 
 class TestBayesianOptimizer(unittest.TestCase):

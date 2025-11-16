@@ -59,10 +59,10 @@ class TunerConfig:
     
     def _load_toggles(self):
         """Load the three main toggles from TUNER_TOGGLES.ini"""
-        # Find the toggles file (in parent directory of driver_station_tuner)
+        # Find the toggles file (in ../config/ relative to tuner module)
         module_dir = os.path.dirname(os.path.abspath(__file__))
         parent_dir = os.path.dirname(module_dir)
-        toggles_file = os.path.join(parent_dir, "TUNER_TOGGLES.ini")
+        toggles_file = os.path.join(parent_dir, "config", "TUNER_TOGGLES.ini")
         
         config = configparser.ConfigParser()
         config.read(toggles_file)
@@ -78,10 +78,10 @@ class TunerConfig:
     
     def _load_coefficient_config(self):
         """Load coefficient definitions from COEFFICIENT_TUNING.py"""
-        # Find the coefficient config file
+        # Find the coefficient config file (in ../config/ relative to tuner module)
         module_dir = os.path.dirname(os.path.abspath(__file__))
         parent_dir = os.path.dirname(module_dir)
-        coeff_file = os.path.join(parent_dir, "COEFFICIENT_TUNING.py")
+        coeff_file = os.path.join(parent_dir, "config", "COEFFICIENT_TUNING.py")
         
         # Load as module
         spec = importlib.util.spec_from_file_location("coeff_config", coeff_file)

@@ -35,7 +35,7 @@ This FRC Bayesian Tuner is **PRODUCTION READY** and exceeds all requirements.
 ## 📦 DELIVERABLES
 
 ### Core System (2,193 lines)
-- ✅ `driver_station_tuner/` - Complete Python package
+- ✅ `bayesopt/tuner/` - Complete Python package
 - ✅ `tuner_daemon.py` - Auto-start background daemon
 - ✅ `TUNER_TOGGLES.ini` - 3 main switches
 - ✅ `COEFFICIENT_TUNING.py` - Detailed tuning config
@@ -69,7 +69,7 @@ This FRC Bayesian Tuner is **PRODUCTION READY** and exceeds all requirements.
 
 ### Step 1: Install Dependencies (5 min)
 ```bash
-pip install -r driver_station_tuner/requirements.txt
+pip install -r bayesopt/tuner/requirements.txt
 ```
 
 ### Step 2: Configure (Already Done!)
@@ -301,4 +301,4 @@ For questions or issues, see the comprehensive documentation:
 - TUNER_README.md - Overview
 - DASHBOARD_BUTTON_GUIDE.md - Button setup
 - FINAL_REVIEW.md - Complete quality report
-- driver_station_tuner/MAINTAINER_GUIDE.md - Code details
+- bayesopt/tuner/MAINTAINER_GUIDE.md - Code details

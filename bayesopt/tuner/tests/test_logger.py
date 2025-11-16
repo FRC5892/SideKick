@@ -9,9 +9,9 @@ from pathlib import Path
 import csv
 import time
 
-from driver_station_tuner.config import TunerConfig
-from driver_station_tuner.logger import TunerLogger
-from driver_station_tuner.nt_interface import ShotData
+from tuner.config import TunerConfig
+from tuner.logger import TunerLogger
+from tuner.nt_interface import ShotData
 
 
 class TestTunerLogger(unittest.TestCase):

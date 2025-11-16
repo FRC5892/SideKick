@@ -60,7 +60,7 @@ SideKick/
 ├── DRIVERS_START_HERE.md       ← Driver overview
 ├── AUTO_START_SETUP.md         ← One-time programmer setup
 │
-└── driver_station_tuner/       ← Python modules (don't edit these)
+└── bayesopt/tuner/       ← Python modules (don't edit these)
     ├── config.py               ← Loads from TUNER_TOGGLES.ini and COEFFICIENT_TUNING.py
     ├── optimizer.py            ← Bayesian optimization
     ├── nt_interface.py         ← NetworkTables + RoboRIO protection
@@ -109,7 +109,7 @@ SideKick/
 
 1. **Install dependencies:**
    ```bash
-   pip install -r driver_station_tuner/requirements.txt
+   pip install -r bayesopt/tuner/requirements.txt
    ```
 
 2. **Configure (if needed):**
@@ -155,8 +155,8 @@ Done! Tuner now starts automatically when computer boots.
 | **DRIVERS_START_HERE.md** | Drivers | System overview |
 | **AUTO_START_SETUP.md** | Programmers | Auto-start instructions |
 | **SHOT_LOGGING_BUTTONS.md** | Drivers/Coaches | Quick reference |
-| **driver_station_tuner/README.md** | Developers | Technical details |
-| **driver_station_tuner/MAINTAINER_GUIDE.md** | Developers | Code architecture |
+| **bayesopt/tuner/README.md** | Developers | Technical details |
+| **bayesopt/tuner/MAINTAINER_GUIDE.md** | Developers | Code architecture |
 
 ---
 
@@ -164,7 +164,7 @@ Done! Tuner now starts automatically when computer boots.
 
 Run unit tests:
 ```bash
-python driver_station_tuner/run_tests.py
+python bayesopt/tuner/run_tests.py
 ```
 
 All 29 tests should pass ✅
@@ -216,8 +216,8 @@ MAX_WRITE_RATE_HZ = 2.0  # Change from 5.0
 
 - **Drivers:** See [DASHBOARD_BUTTON_GUIDE.md](DASHBOARD_BUTTON_GUIDE.md)
 - **Setup:** See [AUTO_START_SETUP.md](AUTO_START_SETUP.md)
-- **Technical:** See driver_station_tuner/README.md
-- **Code:** See driver_station_tuner/MAINTAINER_GUIDE.md
+- **Technical:** See bayesopt/tuner/README.md
+- **Code:** See bayesopt/tuner/MAINTAINER_GUIDE.md
 
 ---
 
