@@ -30,7 +30,7 @@
    - `FiringSolver/LogMiss` → Choose **"Toggle Button"** widget
 
 4. **Customize for clarity:**
-   - **LogHit button**: Change color to **GREEN** 
+   - **LogHit button**: Change color to **GREEN**
    - **LogMiss button**: Change color to **RED**
    - **Make them BIG** - drivers need to click quickly!
 
@@ -86,8 +86,8 @@
 
 ### You'll Know It's Working When:
 
-✅ **Button flashes briefly** when you click  
-✅ **Button returns to OFF** automatically (0.1 seconds later)  
+✅ **Button flashes briefly** when you click
+✅ **Button returns to OFF** automatically (0.1 seconds later)
 ✅ **Tuner status updates** in NetworkTables (if you're watching)
 
 ### Troubleshooting:

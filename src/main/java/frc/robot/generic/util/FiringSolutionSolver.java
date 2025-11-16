@@ -137,7 +137,7 @@ public final class FiringSolutionSolver {
   /** Logs whether a shot hit or missed. */
   public static void logShotResult(boolean hit) {
     Logger.recordOutput("FiringSolver/Hit", hit);
-    
+
     // Also log timestamp to help tuner detect new shot events
     Logger.recordOutput("FiringSolver/ShotTimestamp", System.currentTimeMillis() / 1000.0);
   }

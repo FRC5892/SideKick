@@ -21,7 +21,7 @@ That's it! The tuner runs automatically in the background.
 ### 1. **TUNER_TOGGLES.ini** - Three Main Switches
 ```ini
 tuner_enabled = True                      # Turn tuner on/off
-require_shot_logged = False               # Block shooting until logged  
+require_shot_logged = False               # Block shooting until logged
 require_coefficients_updated = False      # Block shooting until optimized
 ```
 
@@ -74,33 +74,33 @@ SideKick/
 ## What Makes This Perfect? ✨
 
 ### Zero Driver Burden
-✅ Tuner auto-starts on computer boot  
-✅ Runs silently in background  
-✅ Drivers just click hit/miss buttons  
+✅ Tuner auto-starts on computer boot
+✅ Runs silently in background
+✅ Drivers just click hit/miss buttons
 ✅ No configuration needed by drivers
 
 ### Easy for Programmers
-✅ **Two simple files** to customize (TUNER_TOGGLES.ini, COEFFICIENT_TUNING.py)  
-✅ **No code changes** needed for most adjustments  
-✅ **Clear comments** explaining every setting  
+✅ **Two simple files** to customize (TUNER_TOGGLES.ini, COEFFICIENT_TUNING.py)
+✅ **No code changes** needed for most adjustments
+✅ **Clear comments** explaining every setting
 ✅ **Examples** showing how to modify everything
 
 ### RoboRIO Protection
-✅ **Rate limiting** prevents NT spam (5 Hz writes max, 20 Hz reads max)  
-✅ **Physical limits** reject impossible sensor readings  
-✅ **Iteration caps** prevent CPU overload (max 30, not 50)  
+✅ **Rate limiting** prevents NT spam (5 Hz writes max, 20 Hz reads max)
+✅ **Physical limits** reject impossible sensor readings
+✅ **Iteration caps** prevent CPU overload (max 30, not 50)
 ✅ **Batch writes** reduce network traffic
 
 ### Safety
-✅ **Auto-disable** during matches (FMS detection)  
-✅ **Coefficient clamping** to safe ranges  
-✅ **Invalid data rejection**  
+✅ **Auto-disable** during matches (FMS detection)
+✅ **Coefficient clamping** to safe ranges
+✅ **Invalid data rejection**
 ✅ **Optional interlocks** for intensive tuning
 
 ### Quality
-✅ **Complete data capture** (17+ fields per shot)  
-✅ **Bayesian optimization** (smart, not random)  
-✅ **Adaptive step sizes** (big steps → fine tuning)  
+✅ **Complete data capture** (17+ fields per shot)
+✅ **Bayesian optimization** (smart, not random)
+✅ **Adaptive step sizes** (big steps → fine tuning)
 ✅ **Full CSV logging** for offline analysis
 
 ---

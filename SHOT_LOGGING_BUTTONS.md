@@ -43,7 +43,7 @@ The button will flash and reset automatically - you're done!
 
 **Step 3:** Find and add these two entries:
 - `FiringSolver/LogHit` → Choose **"Toggle Button"** widget
-- `FiringSolver/LogMiss` → Choose **"Toggle Button"** widget  
+- `FiringSolver/LogMiss` → Choose **"Toggle Button"** widget
 
 **Step 4:** Customize for clarity (IMPORTANT!)
 - **LogHit button**: Set background color to **GREEN** (#00FF00)

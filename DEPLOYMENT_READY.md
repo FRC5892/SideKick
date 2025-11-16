@@ -1,8 +1,8 @@
 # ✅ DEPLOYMENT READY - FRC Bayesian Tuner
 
-**Team:** 5892  
-**Status:** ✅ PRODUCTION READY  
-**Date:** 2025-11-15  
+**Team:** 5892
+**Status:** ✅ PRODUCTION READY
+**Date:** 2025-11-15
 **Version:** 1.0.0
 
 ---
@@ -54,7 +54,7 @@ This FRC Bayesian Tuner is **PRODUCTION READY** and exceeds all requirements.
 
 ### Auto-Start Scripts
 - ✅ RUN_TUNER.bat - Windows
-- ✅ RUN_TUNER.sh - Mac/Linux  
+- ✅ RUN_TUNER.sh - Mac/Linux
 - ✅ AUTO_START_SETUP.md - Instructions
 
 ### Tests

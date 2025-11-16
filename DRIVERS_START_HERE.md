@@ -51,7 +51,7 @@ That's it. You're not expected to debug it.
 
 ## Summary
 
-**Normal operation:** 
+**Normal operation:**
 - Tuner runs automatically in background
 - You click dashboard buttons to log hits/misses
 - Everything else is automatic
