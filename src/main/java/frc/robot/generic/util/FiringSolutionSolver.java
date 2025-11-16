@@ -83,15 +83,8 @@ public final class FiringSolutionSolver {
     // Create solution once
     FiringSolution solution = new FiringSolution(flatYaw, pitch, velocity);
 
-    // Record EVERYTHING for Bayesian tuner - captures full robot state at shot time
+    // Record output
     Logger.recordOutput("FiringSolver/Solution", solution);
-    Logger.recordOutput("FiringSolver/Distance", horizontalDistance);
-    Logger.recordOutput("FiringSolver/TargetHeight", kTargetHeight.get());
-    Logger.recordOutput("FiringSolver/LaunchHeight", kLaunchHeight.get());
-    Logger.recordOutput("FiringSolver/DragCoefficient", kDragCoefficient.get());
-    Logger.recordOutput("FiringSolver/AirDensity", AIR_DENSITY);
-    Logger.recordOutput("FiringSolver/ProjectileMass", kProjectileMass.get());
-    Logger.recordOutput("FiringSolver/ProjectileArea", kProjectileArea.get());
 
     // Return the same solution
     return solution;
@@ -137,9 +130,6 @@ public final class FiringSolutionSolver {
   /** Logs whether a shot hit or missed. */
   public static void logShotResult(boolean hit) {
     Logger.recordOutput("FiringSolver/Hit", hit);
-
-    // Also log timestamp to help tuner detect new shot events
-    Logger.recordOutput("FiringSolver/ShotTimestamp", System.currentTimeMillis() / 1000.0);
   }
 
   public record FiringSolution(double yawRadians, double pitchRadians, double exitVelocity) {}
