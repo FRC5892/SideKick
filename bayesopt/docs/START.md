@@ -1,14 +1,11 @@
 # Turn on
 
-- Install dependencies once:
+- Install dependencies once per machine:
+  
   pip install -r bayesopt/tuner/requirements.txt
 
-- Enable tuner:
+- Make sure tuner and preffered setting are turned on:
+  
   Set TUNER_ENABLED = True and set TEAM_NUMBER or NT_SERVER_IP.
 
-- Start (if not autostarted):
-  cd bayesopt/scripts && python3 tuner_daemon.py
-
-Quick checks:
-- Tail log: tail -n 200 tuner_logs/tuner_daemon.log
-- Verify CSVs: ls tuner_logs/bayesian_tuner_*.csv
+- Run robot as per usual
