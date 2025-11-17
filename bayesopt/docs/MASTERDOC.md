@@ -3,7 +3,7 @@
 **THIS IS NOT A HOW TO OPERATE GUIDE. THIS IS A MASTERDOC.** 
 **IT CONTAINS LOGIC AND EXPLINATIONS NOT NESSCARY FOR OPERATION.**
 **THE OPERATION GUIDE IS QUICKSTART.md**
-**THIS IS NOT REQUIRED READING**
+**THIS IS NOT REQUIRED READING.**
 
 Why I made this
 - Single-source, practical reference for maintainers. Explains architecture, runtime flow, interactions, and exactly where to change things.
