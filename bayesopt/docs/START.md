@@ -6,6 +6,8 @@
 
 - Make sure tuner and preffered setting are turned on:
   
-  Set TUNER_ENABLED = True and set TEAM_NUMBER or NT_SERVER_IP.
+  This is in the filepath to the toggles:
+
+  bayesopt/config/TUNER_TOGGLES.ini 
 
 - Run robot as per usual
