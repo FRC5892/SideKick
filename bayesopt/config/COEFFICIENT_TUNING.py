@@ -37,6 +37,8 @@ TUNING_ORDER = [
 #   - is_integer: True = round to whole numbers, False = allow decimals
 #   - nt_key: NetworkTables path (don't change unless robot code changes)
 
+# TODO: Update tuning parameters before testing on robot
+
 COEFFICIENTS = {
     "kDragCoefficient": {
         "enabled": True,               # ← CHANGE THIS to enable/disable tuning
