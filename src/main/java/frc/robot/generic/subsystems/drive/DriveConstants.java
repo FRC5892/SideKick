@@ -52,12 +52,12 @@ public class DriveConstants {
   Stand (or imagine standing) beside the robot, facing the same direction as its absolute front.
 
   - For front wheels:
-      Overrotated → pointing toward the robot’s right (your left)
-      Underrotated → pointing toward the robot’s left (your right)
+      Overrotated -> pointing toward the robot’s right (your left)
+      Underrotated -> pointing toward the robot’s left (your right)
 
   - For back wheels:
-      Overrotated → pointing toward the robot’s right (your left)
-      Underrotated → pointing toward the robot’s left (your right)
+      Overrotated -> pointing toward the robot’s right (your left)
+      Underrotated -> pointing toward the robot’s left (your right)
   */
   public static final Rotation2d frontLeftZeroRotation =
       new Rotation2d(-0.7853181997882291).minus(new Rotation2d(Degrees.of(16 + 5)));
