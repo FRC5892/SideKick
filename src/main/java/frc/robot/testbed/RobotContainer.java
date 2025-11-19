@@ -26,10 +26,11 @@ import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
- * Testbed robot container for remotely testing motors and prototypes on a swerve drivetrain
- * without any programming work.
+ * Testbed robot container for remotely testing motors and prototypes on a swerve drivetrain without
+ * any programming work.
  *
- * This testbed provides:
+ * <p>This testbed provides:
+ *
  * <ul>
  *   <li>Generic swerve drive controlled by driver controller (port 0)
  *   <li>4 motors bound to codriver joysticks for direct voltage control (CAN IDs 10-13)
@@ -42,6 +43,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * </ul>
  *
  * <b>Codriver Controller Layout (Port 1):</b>
+ *
  * <ul>
  *   <li>Left Joystick Y -> JoystickMotor1 (CAN 10)
  *   <li>Left Joystick X -> JoystickMotor2 (CAN 11)
@@ -63,7 +65,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * "TestMotors/{MotorName}/TargetPosition". Position control moves slowly without PID until the
  * encoder reaches the target.
  *
- * <b>Motor Detection:</b> Each motor's type (TalonFX or Spark Max) is automatically detected at
+ * <p><b>Motor Detection:</b> Each motor's type (TalonFX or Spark Max) is automatically detected at
  * startup by interrogating the CAN bus. Motors are configured appropriately based on detection
  * results. Detection is transparent - motors just work with whatever controller is present without
  * exposing type information to the dashboard.
@@ -156,18 +158,19 @@ public class RobotContainer implements AbstractRobotContainer {
   /**
    * Configures button bindings for testbed motor control.
    *
-   * <b>Joystick Control:</b> The four joystick motors receive continuous voltage control (-12V
+   * <p><b>Joystick Control:</b> The four joystick motors receive continuous voltage control (-12V
    * to +12V) proportional to joystick deflection. A 10% deadband is applied to prevent drift.
    *
-   * <b>Paddle Control:</b> The two paddle motors run synchronized - both move forward when left
+   * <p><b>Paddle Control:</b> The two paddle motors run synchronized - both move forward when left
    * trigger is pressed, both move backward when right trigger is pressed. Speed is proportional to
    * trigger pressure.
    *
-   * <b>Button Control:</b> The four button motors are controlled via dashboard values. Press and
+   * <p><b>Button Control:</b> The four button motors are controlled via dashboard values. Press and
    * hold A/B for velocity control or X/Y for position control. Release to stop. Target values are
    * read from NetworkTables.
    *
-   * <b>Emergency Stops:</b>
+   * <p><b>Emergency Stops:</b>
+   *
    * <ul>
    *   <li>Left Bumper: Stop paddle motors only
    *   <li>Right Bumper: Stop joystick motors only
@@ -256,41 +259,46 @@ public class RobotContainer implements AbstractRobotContainer {
     // Left bumper: Stop paddle motors only
     codriverController
         .leftBumper()
-        .onTrue(Commands.runOnce(() -> {
-          paddleMotor1.stop();
-          paddleMotor2.stop();
-        }));
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  paddleMotor1.stop();
+                  paddleMotor2.stop();
+                }));
 
     // Right bumper: Stop joystick motors only
     codriverController
         .rightBumper()
-        .onTrue(Commands.runOnce(() -> {
-          joystickMotor1.stop();
-          joystickMotor2.stop();
-          joystickMotor3.stop();
-          joystickMotor4.stop();
-        }));
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  joystickMotor1.stop();
+                  joystickMotor2.stop();
+                  joystickMotor3.stop();
+                  joystickMotor4.stop();
+                }));
 
     // Back button: EMERGENCY STOP - Stop ALL test motors immediately
     codriverController
         .back()
-        .onTrue(Commands.runOnce(() -> {
-          joystickMotor1.stop();
-          joystickMotor2.stop();
-          joystickMotor3.stop();
-          joystickMotor4.stop();
-          paddleMotor1.stop();
-          paddleMotor2.stop();
-          buttonMotor1.stop();
-          buttonMotor2.stop();
-          buttonMotor3.stop();
-          buttonMotor4.stop();
-        }));
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  joystickMotor1.stop();
+                  joystickMotor2.stop();
+                  joystickMotor3.stop();
+                  joystickMotor4.stop();
+                  paddleMotor1.stop();
+                  paddleMotor2.stop();
+                  buttonMotor1.stop();
+                  buttonMotor2.stop();
+                  buttonMotor3.stop();
+                  buttonMotor4.stop();
+                }));
   }
 
   /**
-   * Use this to pass the autonomous command to the main {@link
-   * frc.robot.generic.Robot} class.
+   * Use this to pass the autonomous command to the main {@link frc.robot.generic.Robot} class.
    *
    * @return the command to run in autonomous
    */

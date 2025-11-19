@@ -39,8 +39,9 @@ import frc.robot.testbed.util.MotorDetectUtil;
 /**
  * Subsystem for controlling a single test motor (either Spark Max or TalonFX).
  *
- * This subsystem automatically detects the motor controller type at the given CAN ID by
+ * <p>This subsystem automatically detects the motor controller type at the given CAN ID by
  * interrogating the CAN bus and configures itself accordingly. Supports three control modes:
+ *
  * <ul>
  *   <li><b>Voltage Control:</b> Direct voltage output (-12V to +12V)
  *   <li><b>Velocity Control:</b> Closed-loop velocity control (RPM)
@@ -52,8 +53,8 @@ import frc.robot.testbed.util.MotorDetectUtil;
  * "TestMotors/{name}/TargetVelocity" and "TestMotors/{name}/TargetPosition". Motor type detection
  * is performed internally and not exposed to the dashboard.
  *
- * <b>Motor Type Detection:</b> Uses {@link MotorDetectUtil#detectIsTalonFX(int)} to determine
- * if the motor is a TalonFX or Spark Max at startup. The appropriate hardware interface is then
+ * <p><b>Motor Type Detection:</b> Uses {@link MotorDetectUtil#detectIsTalonFX(int)} to determine if
+ * the motor is a TalonFX or Spark Max at startup. The appropriate hardware interface is then
  * instantiated based on the detection result. This detection is transparent - the motor just works
  * with whatever controller is present.
  */
@@ -119,7 +120,8 @@ public class TestMotor extends SubsystemBase {
         } else {
           sparkMotor = new SparkMax(canId, MotorType.kBrushless);
           var config = new SparkMaxConfig();
-          sparkMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+          sparkMotor.configure(
+              config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
           sparkPID = sparkMotor.getClosedLoopController();
         }
         break;
@@ -140,7 +142,8 @@ public class TestMotor extends SubsystemBase {
           // For Spark in sim, we'll just create a real Spark object since there's no sim version
           sparkMotor = new SparkMax(canId, MotorType.kBrushless);
           var config = new SparkMaxConfig();
-          sparkMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+          sparkMotor.configure(
+              config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
           sparkPID = sparkMotor.getClosedLoopController();
         }
         break;
@@ -153,7 +156,8 @@ public class TestMotor extends SubsystemBase {
           // For replay mode with Spark, use a real Spark in no-op mode
           sparkMotor = new SparkMax(canId, MotorType.kBrushless);
           var config = new SparkMaxConfig();
-          sparkMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+          sparkMotor.configure(
+              config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
           sparkPID = sparkMotor.getClosedLoopController();
         }
         break;
@@ -211,7 +215,7 @@ public class TestMotor extends SubsystemBase {
   /**
    * Sets the motor position in rotations using simple control without PID.
    *
-   * As requested, this moves the motor slowly towards the target position at a constant low
+   * <p>As requested, this moves the motor slowly towards the target position at a constant low
    * speed (max 3V) without using PID control. The motor speed is proportional to the error for
    * smooth approach, and stops when within 0.05 rotations of the target.
    *

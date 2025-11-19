@@ -13,18 +13,15 @@
 
 package frc.robot.testbed.util;
 
-import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import edu.wpi.first.hal.can.CANStatus;
-import edu.wpi.first.wpilibj.CAN;
 
 /**
  * Utility class for detecting motor types on the CAN bus.
  *
- * This class interrogates the CAN bus to determine if a device at a given CAN ID is a TalonFX or
+ * <p>This class interrogates the CAN bus to determine if a device at a given CAN ID is a TalonFX or
  * Spark Max motor controller by attempting to communicate with each type and checking for
  * successful responses.
  */
@@ -33,8 +30,9 @@ public class MotorDetectUtil {
   /**
    * Detects if the device at the given CAN ID is a TalonFX motor controller.
    *
-   * This method attempts to create and communicate with both TalonFX and Spark Max controllers
+   * <p>This method attempts to create and communicate with both TalonFX and Spark Max controllers
    * to determine which one responds successfully. The detection works by:
+   *
    * <ol>
    *   <li>Attempting to read firmware version from a TalonFX at the CAN ID
    *   <li>If successful, returns true (device is TalonFX)
