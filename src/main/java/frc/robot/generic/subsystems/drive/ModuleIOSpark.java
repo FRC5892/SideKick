@@ -73,7 +73,7 @@ public class ModuleIOSpark implements ModuleIO {
   private final Debouncer driveConnectedDebounce = new Debouncer(0.5);
   private final Debouncer turnConnectedDebounce = new Debouncer(0.5);
 
-  // Cached cancoder status — updated only in resetToAbsolute()
+  // Cached cancoder status - updated only in resetToAbsolute()
   private boolean lastCancoderConnected = false;
 
   private final int module;

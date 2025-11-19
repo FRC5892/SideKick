@@ -31,10 +31,9 @@ import frc.robot.generic.util.LoggedDIO.SimDIO;
 import frc.robot.generic.util.LoggedTalon.NoOppTalonFX;
 import frc.robot.generic.util.LoggedTalon.PhoenixTalonFX;
 import frc.robot.generic.util.LoggedTalon.SimpleMotorSim;
-import frc.robot.outReach.subsystems.turret.Turret;
 import frc.robot.generic.util.RobotConfig;
 import frc.robot.generic.util.SwerveBuilder;
-
+import frc.robot.outReach.subsystems.turret.Turret;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
