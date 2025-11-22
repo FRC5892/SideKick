@@ -13,5 +13,3 @@ nohup python3 tuner_daemon.py > /dev/null 2>&1 &
 
 # Optional: Show a quick message
 echo "FRC Tuner daemon started in background"
-sleep 2
-
