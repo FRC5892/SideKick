@@ -11,6 +11,7 @@ import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -38,7 +39,10 @@ public class Turret extends SubsystemBase {
                     .withMotionMagicCruiseVelocity(0.5)
                     .withMotionMagicAcceleration(2))
             .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(10))
-            .withMotorOutput(new MotorOutputConfigs().withNeutralMode(NeutralModeValue.Brake));
+            .withMotorOutput(
+                new MotorOutputConfigs()
+                    .withNeutralMode(NeutralModeValue.Brake)
+                    .withInverted(InvertedValue.Clockwise_Positive));
     this.turretMotor = turretMotor.withConfig(config).withMMPIDTuning(config);
 
     this.forwardLimit = forwardLimit.withReversed(true);
@@ -73,6 +77,8 @@ public class Turret extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     turretMotor.periodic();
+    forwardLimit.periodic();
+    reverseLimit.periodic();
     if (positionControl) {
       turretMotor.setControl(
           mmControl

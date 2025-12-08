@@ -31,10 +31,9 @@ import frc.robot.generic.util.LoggedDIO.SimDIO;
 import frc.robot.generic.util.LoggedTalon.NoOppTalonFX;
 import frc.robot.generic.util.LoggedTalon.PhoenixTalonFX;
 import frc.robot.generic.util.LoggedTalon.SimpleMotorSim;
-import frc.robot.outReach.subsystems.turret.Turret;
 import frc.robot.generic.util.RobotConfig;
 import frc.robot.generic.util.SwerveBuilder;
-
+import frc.robot.outReach.subsystems.turret.Turret;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -53,7 +52,7 @@ public class RobotContainer implements AbstractRobotContainer {
 
   // Subsystems
   private final Drive drive = SwerveBuilder.buildDefaultDrive(controller);
-  private final Turret shooter;
+  private final Turret turret;
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -62,21 +61,22 @@ public class RobotContainer implements AbstractRobotContainer {
   public RobotContainer() {
     switch (Constants.currentMode) {
       case REAL:
-        shooter =
+        System.out.println("Starting REAL OUTREACH");
+        turret =
             new Turret(
-                new PhoenixTalonFX(0, canBus, "Turret"),
-                new HardwareDIO("ForwardLimit", 0),
-                new HardwareDIO("ReverseLimit", 1));
+                new PhoenixTalonFX(20, canBus, "Turret"),
+                new HardwareDIO("ForwardLimit", 1),
+                new HardwareDIO("ReverseLimit", 0));
         break;
       case SIM:
-        shooter =
+        turret =
             new Turret(
                 new SimpleMotorSim(0, canBus, "Turret", 10, 10),
                 SimDIO.fromNT("ForwardLimit"),
                 SimDIO.fromNT("ReverseLimit"));
         break;
       default:
-        shooter =
+        turret =
             new Turret(
                 new NoOppTalonFX("Turret", 0),
                 new NoOppDio("ForwardLimit"),
@@ -114,8 +114,8 @@ public class RobotContainer implements AbstractRobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    controller.a().onTrue(shooter.turnToRotationCommand(0.5));
-    controller.b().onTrue(shooter.turnToRotationCommand(0));
+    controller.a().onTrue(turret.turnToRotationCommand(0.5));
+    controller.b().onTrue(turret.turnToRotationCommand(0));
   }
 
   /**

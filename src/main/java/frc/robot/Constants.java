@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 public final class Constants {
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
-  public static final boolean tuningMode = false;
+  public static final boolean tuningMode = true;
   @Getter private static final Robot currentRobot = Robot.OUTREACH;
 
   public static enum Mode {
