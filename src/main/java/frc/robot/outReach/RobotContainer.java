@@ -116,6 +116,7 @@ public class RobotContainer implements AbstractRobotContainer {
   private void configureButtonBindings() {
     controller.a().onTrue(turret.turnToRotationCommand(0.5));
     controller.b().onTrue(turret.turnToRotationCommand(0));
+    controller.start().whileTrue(turret.homeCommand());
   }
 
   /**
