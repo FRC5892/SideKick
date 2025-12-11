@@ -18,6 +18,7 @@ import static frc.robot.generic.subsystems.drive.DriveConstants.*;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.MountPoseConfigs;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -35,7 +36,15 @@ public class GyroIOPigeon2 implements GyroIO {
   private final StatusSignal<AngularVelocity> yawVelocity = pigeon.getAngularVelocityZWorld();
 
   public GyroIOPigeon2() {
-    pigeon.getConfigurator().apply(new Pigeon2Configuration());
+    pigeon
+        .getConfigurator()
+        .apply(
+            new Pigeon2Configuration()
+                .withMountPose(
+                    new MountPoseConfigs()
+                        .withMountPosePitch(-0.8275826573371887)
+                        .withMountPoseRoll(-2.518435001373291)
+                        .withMountPoseYaw(1.0797953605651855)));
     pigeon.getConfigurator().setYaw(0.0);
     yaw.setUpdateFrequency(odometryFrequency);
     yawVelocity.setUpdateFrequency(50.0);

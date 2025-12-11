@@ -51,7 +51,7 @@ public class RobotContainer implements AbstractRobotContainer {
   private final CANBus canBus = new CANBus();
 
   // Subsystems
-  private final Drive drive = SwerveBuilder.buildDefaultDrive(controller);
+  private final Drive drive = SwerveBuilder.buildDefaultDrive(controller, 0.75);
   private final Turret turret;
 
   // Dashboard inputs
