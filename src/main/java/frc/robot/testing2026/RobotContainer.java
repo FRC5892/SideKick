@@ -11,16 +11,14 @@ import frc.robot.Constants;
 import frc.robot.generic.Robot;
 import frc.robot.generic.commands.DriveCommands;
 import frc.robot.generic.subsystems.drive.Drive;
+import frc.robot.generic.subsystems.vision.Vision;
+import frc.robot.generic.subsystems.vision.VisionConstants;
+import frc.robot.generic.subsystems.vision.VisionIO;
+import frc.robot.generic.subsystems.vision.VisionIOPhotonVision;
+import frc.robot.generic.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.generic.util.AbstractRobotContainer;
-import frc.robot.generic.util.LoggedDIO.HardwareDIO;
-import frc.robot.generic.util.LoggedDIO.NoOppDio;
-import frc.robot.generic.util.LoggedDIO.SimDIO;
-import frc.robot.generic.util.LoggedTalon.NoOppTalonFX;
-import frc.robot.generic.util.LoggedTalon.PhoenixTalonFX;
-import frc.robot.generic.util.LoggedTalon.SimpleMotorSim;
 import frc.robot.generic.util.RobotConfig;
 import frc.robot.generic.util.SwerveBuilder;
-import frc.robot.outReach.subsystems.turret.Turret;
 import frc.robot.testing2026.subsystems.shooter.Shooter;
 import frc.robot.testing2026.subsystems.shooter.ShotCalculator;
 import frc.robot.testing2026.subsystems.shooter.ShotCalculator.Goal;
@@ -37,6 +35,7 @@ public class RobotContainer implements AbstractRobotContainer {
   // Subsystems
   private final Drive drive = SwerveBuilder.buildDefaultDrive(controller);
   private final Shooter shooter;
+  private final Vision vision;
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -44,6 +43,18 @@ public class RobotContainer implements AbstractRobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     shooter = new Shooter(canBus);
+
+    switch (Constants.currentMode) {
+      case REAL -> {
+        vision = new Vision(drive::addVisionMeasurement, new VisionIOPhotonVision(VisionConstants.camera0Name, VisionConstants.robotToCamera0));
+      }
+      case SIM -> {
+        vision = new Vision(drive::addVisionMeasurement, new VisionIOPhotonVisionSim(VisionConstants.camera0Name,VisionConstants.robotToCamera0, drive::getPose));
+      }
+      default -> {
+        vision = new Vision(drive::addVisionMeasurement, new VisionIO(){});
+      }
+    }
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());

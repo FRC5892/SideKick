@@ -9,16 +9,15 @@ import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFXS;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.util.LoggedTalon.Follower.PhoenixTalonFollower;
-import frc.robot.util.LoggedTalon.TalonInputs;
-import frc.robot.util.PhoenixUtil;
+import frc.robot.generic.util.LoggedTalon.Follower.PhoenixTalonFollower;
+import frc.robot.generic.util.LoggedTalon.TalonInputs;
+import frc.robot.generic.util.PhoenixUtil;
 import java.util.function.Function;
 
 // Maintainer notes:
@@ -59,13 +58,14 @@ public class PhoenixTalonFXS extends LoggedTalonFXS {
     supplyCurrentSignal = (StatusSignal<Current>[]) new StatusSignal[followers.length + 1];
     temperatureSignal = (StatusSignal<Temperature>[]) new StatusSignal[followers.length + 1];
 
-    Follower follower = new Follower(canID, MotorAlignmentValue.Aligned);
+    Follower follower = new Follower(canID, false);
     for (int i = 0; i <= followers.length; i++) {
       if (i == 0) {
         talonFX[0] = new TalonFXS(canID, canBus);
       } else {
         talonFX[i] = new TalonFXS(followers[i - 1].canid(), canBus);
-        talonFX[i].setControl(follower.withMotorAlignment(followers[i - 1].opposeDirection()));
+        talonFX[i].setControl(
+            follower.withOpposeMasterDirection(followers[i - 1].opposeDirection()));
       }
       connectionDebouncer[i] = new Debouncer(0.5);
       voltageSignal[i] = talonFX[i].getMotorVoltage();
@@ -78,7 +78,7 @@ public class PhoenixTalonFXS extends LoggedTalonFXS {
           torqueCurrentSignal[i],
           supplyCurrentSignal[i],
           temperatureSignal[i]);
-      talonFX[i].optimizeBusUtilization(PhoenixUtil.kOptimizedSignalFrequency);
+      talonFX[i].optimizeBusUtilization(PhoenixUtil.kOptimizedSignalFrequency, 0);
     }
     velocitySignal = talonFX[0].getVelocity();
     positionSignal = talonFX[0].getPosition();

@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 /**
  * Class for a tunable number. Gets value from dashboard in tuning mode, returns default if not or
@@ -23,7 +22,7 @@ public class LoggedTunableNumber implements DoubleSupplier {
   private static final String tableKey = "/Tuning";
 
   private final double defaultValue;
-  private final LoggedNetworkNumber dashboardNumber;
+  private final UnitNetworkNumber dashboardNumber;
   private final Map<Integer, Double> lastHasChangedValues = new HashMap<>();
 
   /**
@@ -32,14 +31,18 @@ public class LoggedTunableNumber implements DoubleSupplier {
    * @param dashboardKey Key on dashboard
    * @param defaultValue Default value
    */
-  public LoggedTunableNumber(String dashboardKey, double defaultValue) {
+  public LoggedTunableNumber(String dashboardKey, double defaultValue, String unit) {
     this.defaultValue = defaultValue;
     if (Constants.tuningMode) {
       String key = tableKey + "/" + dashboardKey;
-      dashboardNumber = new LoggedNetworkNumber(key, defaultValue);
+      dashboardNumber = new UnitNetworkNumber(key, defaultValue, unit);
     } else {
       dashboardNumber = null;
     }
+  }
+
+  public LoggedTunableNumber(String dashboardKey, double defaultValue) {
+    this(dashboardKey, defaultValue, "");
   }
 
   /**

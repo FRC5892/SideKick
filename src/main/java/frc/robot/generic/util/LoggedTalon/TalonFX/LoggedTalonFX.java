@@ -8,9 +8,9 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
-import frc.robot.util.LoggedTalon.Follower.PhoenixTalonFollower;
-import frc.robot.util.LoggedTalon.LoggedTalon;
-import frc.robot.util.LoggedTalon.TalonFXS.LoggedTalonFXS;
+import frc.robot.generic.util.LoggedTalon.Follower.PhoenixTalonFollower;
+import frc.robot.generic.util.LoggedTalon.LoggedTalon;
+import frc.robot.generic.util.LoggedTalon.TalonFXS.LoggedTalonFXS;
 import java.util.function.Function;
 
 /**

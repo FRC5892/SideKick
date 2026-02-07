@@ -1,15 +1,14 @@
 package frc.robot.testing2026.subsystems.shooter;
 
 import com.ctre.phoenix6.CANBus;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import frc.robot.Constants;
-import frc.robot.util.LoggedDIO.HardwareDIO;
-import frc.robot.util.LoggedDIO.SimDIO;
-import frc.robot.util.LoggedTalon.Follower.PhoenixTalonFollower;
-import frc.robot.util.LoggedTalon.TalonFX.NoOppTalonFX;
-import frc.robot.util.LoggedTalon.TalonFX.PhoenixTalonFX;
-import frc.robot.util.LoggedTalon.TalonFX.TalonFXFlywheelSim;
-import frc.robot.util.LoggedTalon.TalonFX.TalonFXSimpleMotorSim;
+import frc.robot.generic.util.LoggedDIO.HardwareDIO;
+import frc.robot.generic.util.LoggedDIO.SimDIO;
+import frc.robot.generic.util.LoggedTalon.Follower.PhoenixTalonFollower;
+import frc.robot.generic.util.LoggedTalon.TalonFX.NoOppTalonFX;
+import frc.robot.generic.util.LoggedTalon.TalonFX.PhoenixTalonFX;
+import frc.robot.generic.util.LoggedTalon.TalonFX.TalonFXFlywheelSim;
+import frc.robot.generic.util.LoggedTalon.TalonFX.TalonFXSimpleMotorSim;
 import lombok.Getter;
 
 /** Container for shooting bits. This class will initialize the propper IO interfaces. */
@@ -23,11 +22,7 @@ public class Shooter {
       case REAL -> {
         flywheel =
             new Flywheel(
-                new PhoenixTalonFX(
-                    25,
-                    bus,
-                    "Flywheel",
-                    new PhoenixTalonFollower(26, MotorAlignmentValue.Aligned)));
+                new PhoenixTalonFX(25, bus, "Flywheel", new PhoenixTalonFollower(26, true)));
         hood =
             new Hood(
                 new PhoenixTalonFX(27, bus, "Hood"),
@@ -48,7 +43,7 @@ public class Shooter {
                     "Flywheel",
                     0.0007567661,
                     1 / 1.25,
-                    new PhoenixTalonFollower(26, MotorAlignmentValue.Aligned)));
+                    new PhoenixTalonFollower(26, true)));
         hood =
             new Hood(
                 new TalonFXSimpleMotorSim(27, bus, "Hood", 0.0017154536, 1.3),

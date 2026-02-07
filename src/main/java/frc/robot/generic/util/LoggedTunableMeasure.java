@@ -14,18 +14,17 @@ import frc.robot.Constants;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 /**
- * Class for a tunable number. Gets value from dashboard in tuning mode, returns default if not or
- * value not in dashboard.
+ * A Unit-safe number tunable on the dashboard. Gets value from dashboard in tuning mode, returns
+ * default if not or value not in dashboard.
  */
 public class LoggedTunableMeasure<M extends MutableMeasure<? extends Unit, ? extends Measure<?>, M>>
     implements Supplier<M> {
   private static final String tableKey = "/Tuning";
 
   private final M defaultValue;
-  private final LoggedNetworkNumber dashboardNumber;
+  private final UnitNetworkNumber dashboardNumber;
   private final Map<Integer, M> lastHasChangedValues;
 
   /**
@@ -36,9 +35,9 @@ public class LoggedTunableMeasure<M extends MutableMeasure<? extends Unit, ? ext
   public LoggedTunableMeasure(String dashboardKey, M defaultValue) {
     this.defaultValue = defaultValue;
     if (Constants.tuningMode) {
-      // TODO: replace / in unit so it doesn't look weird on nt
-      String key = tableKey + "/" + dashboardKey + " " + defaultValue.unit().symbol();
-      dashboardNumber = new LoggedNetworkNumber(key, defaultValue.magnitude());
+      String key = tableKey + "/" + dashboardKey;
+      dashboardNumber =
+          new UnitNetworkNumber(key, defaultValue.magnitude(), defaultValue.unit().name());
       lastHasChangedValues = new HashMap<>();
     } else {
       dashboardNumber = null;

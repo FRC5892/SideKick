@@ -4,8 +4,8 @@ import com.ctre.phoenix6.CANBus;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import frc.robot.util.LoggedTalon.Follower.PhoenixTalonFollower;
-import frc.robot.util.LoggedTalon.TalonInputs;
+import frc.robot.generic.util.LoggedTalon.Follower.PhoenixTalonFollower;
+import frc.robot.generic.util.LoggedTalon.TalonInputs;
 
 public class TalonFXSimpleMotorSim extends BaseTalonFXSim {
   private final DCMotorSim motorSim;

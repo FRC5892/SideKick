@@ -17,7 +17,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.generic.util.LoggedDIO.LoggedDIO;
-import frc.robot.generic.util.LoggedTalon.LoggedTalonFX;
+import frc.robot.generic.util.LoggedTalon.TalonFX.LoggedTalonFX;
 import frc.robot.generic.util.LoggedTunableNumber;
 import java.util.function.DoubleSupplier;
 

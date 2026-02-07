@@ -28,9 +28,9 @@ import frc.robot.generic.util.AbstractRobotContainer;
 import frc.robot.generic.util.LoggedDIO.HardwareDIO;
 import frc.robot.generic.util.LoggedDIO.NoOppDio;
 import frc.robot.generic.util.LoggedDIO.SimDIO;
-import frc.robot.generic.util.LoggedTalon.NoOppTalonFX;
-import frc.robot.generic.util.LoggedTalon.PhoenixTalonFX;
-import frc.robot.generic.util.LoggedTalon.SimpleMotorSim;
+import frc.robot.generic.util.LoggedTalon.TalonFX.NoOppTalonFX;
+import frc.robot.generic.util.LoggedTalon.TalonFX.PhoenixTalonFX;
+import frc.robot.generic.util.LoggedTalon.TalonFX.TalonFXSimpleMotorSim;
 import frc.robot.generic.util.RobotConfig;
 import frc.robot.generic.util.SwerveBuilder;
 import frc.robot.outReach.subsystems.turret.Turret;
@@ -71,7 +71,7 @@ public class RobotContainer implements AbstractRobotContainer {
       case SIM:
         turret =
             new Turret(
-                new SimpleMotorSim(0, canBus, "Turret", 10, 10),
+                new TalonFXSimpleMotorSim(0, canBus, "Turret", 10, 10),
                 SimDIO.fromNT("ForwardLimit"),
                 SimDIO.fromNT("ReverseLimit"));
         break;

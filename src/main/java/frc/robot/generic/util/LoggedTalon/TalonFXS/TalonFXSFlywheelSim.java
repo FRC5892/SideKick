@@ -4,8 +4,8 @@ import com.ctre.phoenix6.CANBus;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import frc.robot.util.LoggedTalon.Follower.PhoenixTalonFollower;
-import frc.robot.util.LoggedTalon.TalonInputs;
+import frc.robot.generic.util.LoggedTalon.Follower.PhoenixTalonFollower;
+import frc.robot.generic.util.LoggedTalon.TalonInputs;
 
 // Maintainer notes:
 // The file is currently a copy of LoggedTalonFX, with all instances of TalonFX replaced with
@@ -41,8 +41,8 @@ public class TalonFXSFlywheelSim extends BaseTalonFXSSim {
     motorSim =
         new FlywheelSim(
             LinearSystemId.createFlywheelSystem(
-                DCMotor.getMinion(followers.length + 1), J_KgMetersSquared, gearReduction),
-            DCMotor.getMinion(followers.length + 1));
+                DCMotor.getNeo550(followers.length + 1), J_KgMetersSquared, gearReduction),
+            DCMotor.getNeo550(followers.length + 1));
   }
 
   @Override

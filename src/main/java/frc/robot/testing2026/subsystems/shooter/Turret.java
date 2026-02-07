@@ -29,7 +29,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
-import frc.robot.RobotState;
+import frc.robot.generic.RobotState;
 import frc.robot.generic.util.LoggedDIO.LoggedDIO;
 import frc.robot.generic.util.LoggedTalon.TalonFX.LoggedTalonFX;
 import frc.robot.generic.util.LoggedTunableMeasure;

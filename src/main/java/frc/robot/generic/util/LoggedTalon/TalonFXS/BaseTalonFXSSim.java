@@ -4,8 +4,8 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.sim.TalonFXSSimState;
 import edu.wpi.first.wpilibj.RobotController;
-import frc.robot.util.LoggedTalon.Follower.PhoenixTalonFollower;
-import frc.robot.util.LoggedTalon.TalonInputs;
+import frc.robot.generic.util.LoggedTalon.Follower.PhoenixTalonFollower;
+import frc.robot.generic.util.LoggedTalon.TalonInputs;
 import java.util.function.Function;
 
 /**

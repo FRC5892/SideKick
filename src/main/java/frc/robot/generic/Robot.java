@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants;
 import frc.robot.generic.util.AbstractRobotContainer;
+import frc.robot.generic.util.PhoenixUtil;
 import frc.robot.generic.util.RobotConfig;
 import frc.robot.outReach.RobotContainer;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -108,6 +109,7 @@ public class Robot extends LoggedRobot {
 
     config.robotPeriodicBeforeScheduler();
 
+    PhoenixUtil.refreshAll();
     // Runs the Scheduler. This is responsible for polling buttons, adding
     // newly-scheduled commands, running already-scheduled commands, removing
     // finished or interrupted commands, and running subsystem periodic() methods.

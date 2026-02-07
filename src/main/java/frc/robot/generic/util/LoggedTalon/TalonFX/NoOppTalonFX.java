@@ -6,9 +6,9 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.units.measure.Angle;
-import frc.robot.util.LoggedTalon.LoggedTalon;
-import frc.robot.util.LoggedTalon.TalonFXS.NoOppTalonFXS;
-import frc.robot.util.LoggedTalon.TalonInputs;
+import frc.robot.generic.util.LoggedTalon.LoggedTalon;
+import frc.robot.generic.util.LoggedTalon.TalonFXS.NoOppTalonFXS;
+import frc.robot.generic.util.LoggedTalon.TalonInputs;
 import java.util.function.Function;
 
 /**

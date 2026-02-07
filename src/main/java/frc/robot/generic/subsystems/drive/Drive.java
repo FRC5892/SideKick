@@ -45,6 +45,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.generic.RobotState;
 import frc.robot.generic.util.LocalADStarAK;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -185,6 +186,8 @@ public class Drive extends SubsystemBase {
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
 
     Logger.recordOutput("Odometry/Robot", getPose());
+    RobotState.getInstance().setRobotPosition(getPose());
+    RobotState.getInstance().setRobotRelativeVelocity(getChassisSpeeds());
   }
 
   /**

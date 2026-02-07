@@ -27,7 +27,7 @@ public final class Constants {
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
   public static final boolean tuningMode = true;
-  @Getter private static final Robot currentRobot = Robot.OUTREACH;
+  @Getter private static final Robot currentRobot = Robot.TESTING_2026;
 
   public static enum Mode {
     /** Running on a real robot. */
@@ -45,7 +45,9 @@ public final class Constants {
     OUTREACH(frc.robot.outReach.RobotContainer.config),
     TESTBED(frc.robot.testbed.RobotContainer.config),
     CUSTOM_IMPL_1(frc.robot.customImplementation1.RobotContainer.config),
-    CUSTOM_IMPL_2(frc.robot.customImplementation2.RobotContainer.config);
+    CUSTOM_IMPL_2(frc.robot.customImplementation2.RobotContainer.config),
+    TESTING_2026(frc.robot.testing2026.RobotContainer.config);
+
     public final RobotConfig config;
   }
 }

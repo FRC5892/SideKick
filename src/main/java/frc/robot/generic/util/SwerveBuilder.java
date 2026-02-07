@@ -65,9 +65,9 @@ public class SwerveBuilder {
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
-            () -> driveController.getLeftY() * speedMultiplier,
-            () -> driveController.getLeftX() * speedMultiplier,
-            () -> driveController.getRightX() * speedMultiplier));
+            () -> -driveController.getLeftY() * speedMultiplier,
+            () -> -driveController.getLeftX() * speedMultiplier,
+            () -> -driveController.getRightX() * speedMultiplier));
     driveController
         .y()
         .onTrue(
