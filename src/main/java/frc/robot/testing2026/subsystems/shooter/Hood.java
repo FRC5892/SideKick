@@ -1,0 +1,120 @@
+package frc.robot.testing2026.subsystems.shooter;
+
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Rotations;
+
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.FeedbackConfigs;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.SlotConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rectangle2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.measure.MutAngle;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.RobotState;
+import frc.robot.util.FieldConstants.LinesHorizontal;
+import frc.robot.util.FieldConstants.LinesVertical;
+import frc.robot.util.GenericPositionMechanismSubsystem;
+import frc.robot.util.LoggedDIO.LoggedDIO;
+import frc.robot.util.LoggedTalon.TalonFX.LoggedTalonFX;
+import frc.robot.util.LoggedTunableMeasure;
+import frc.robot.util.LoggedTunableNumber;
+import org.littletonrobotics.junction.AutoLogOutput;
+
+public class Hood extends GenericPositionMechanismSubsystem {
+  private final LoggedTunableMeasure<MutAngle> stowPosition =
+      new LoggedTunableMeasure<>("Hood/StowAngle", Degrees.mutable(15));
+
+  @AutoLogOutput(key = "Hood/trenchAreas")
+  public static final Rectangle2d[]
+      trenchAreas = { // For bonus points allow the trench area to be expanded by hardcoded constant
+    new Rectangle2d(
+        new Translation2d(LinesVertical.starting, LinesHorizontal.leftTrenchOpenStart),
+        new Translation2d(LinesVertical.neutralZoneNear, LinesHorizontal.leftTrenchOpenEnd)),
+    new Rectangle2d(
+        new Translation2d(
+            (2 * LinesVertical.center) - LinesVertical.starting,
+            LinesHorizontal.leftTrenchOpenStart),
+        new Translation2d(LinesVertical.neutralZoneFar, LinesHorizontal.leftTrenchOpenEnd)),
+    new Rectangle2d(
+        new Translation2d(LinesVertical.starting, LinesHorizontal.rightTrenchOpenStart),
+        new Translation2d(LinesVertical.neutralZoneNear, LinesHorizontal.rightTrenchOpenEnd)),
+    new Rectangle2d(
+        new Translation2d(
+            (2 * LinesVertical.center) - LinesVertical.starting,
+            LinesHorizontal.rightTrenchOpenStart),
+        new Translation2d(LinesVertical.neutralZoneFar, LinesHorizontal.rightTrenchOpenEnd))
+  };
+
+  public Hood(LoggedTalonFX motor, LoggedDIO reverseLimit, LoggedDIO forwardLimit) {
+    super(
+        "Hood",
+        motor,
+        reverseLimit,
+        forwardLimit,
+        new LoggedTunableNumber("Hood/Homing/Voltage", 4, "v"),
+        new LoggedTunableNumber("Hood/Homing/ConfirmVoltage", 4, "v"),
+        new LoggedTunableMeasure<>("Hood/Homing/homePosition", Rotations.mutable(0))::get,
+        new LoggedTunableMeasure<>("Hood/Homing/homePosition", Rotations.mutable(0.1))::get,
+        new LoggedTunableMeasure<>("Hood/Tolerance", Degrees.mutable(5))::get);
+    var config =
+        new TalonFXConfiguration()
+            .withSlot0(new Slot0Configs().withKP(0).withKI(0).withKD(0).withKS(0).withKV(0))
+            .withMotionMagic(
+                new MotionMagicConfigs()
+                    .withMotionMagicCruiseVelocity(15)
+                    .withMotionMagicAcceleration(30))
+            .withMotorOutput(
+                new MotorOutputConfigs()
+                    .withNeutralMode(NeutralModeValue.Brake)
+                    .withInverted(InvertedValue.Clockwise_Positive))
+            .withCurrentLimits(new CurrentLimitsConfigs().withStatorCurrentLimit(5))
+            .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(15));
+    motor.withConfig(config).withMMPIDTuning(SlotConfigs.from(config.Slot0), config.MotionMagic);
+    setDefaultCommand(aimCommand());
+    new Trigger(this::shouldStow).whileTrue(stowCommand());
+  }
+
+  public Command aimCommand() {
+    return run(
+        () -> {
+          if (homed) {
+            this.requestPosition(ShotCalculator.getInstance().calculateShot().hoodAngle());
+          }
+        });
+  }
+
+  public Command stowCommand() {
+    return startEnd(
+            () -> {
+              this.requestPosition(new Rotation2d(stowPosition.get()));
+            },
+            () -> {})
+        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+  }
+
+  @AutoLogOutput(key = "Hood/ShouldStow")
+  public boolean shouldStow() {
+    final Pose2d pose = RobotState.getInstance().getRobotPosition();
+    for (int i = 0; i < trenchAreas.length; i++) {
+      if (trenchAreas[i].contains(pose.getTranslation())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Override
+  protected void periodicUser() {
+    ShotCalculator.getInstance().clearCache();
+  }
+}

@@ -3,7 +3,7 @@ package frc.robot.generic.util.LoggedTalon;
 import org.littletonrobotics.junction.AutoLog;
 
 @AutoLog
-public class TalonFXInputs {
+public class TalonInputs {
   public boolean[] connected;
   public double[] appliedVolts;
   public double[] torqueCurrentAmps;
