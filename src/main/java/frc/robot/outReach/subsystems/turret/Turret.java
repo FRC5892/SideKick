@@ -12,7 +12,6 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -26,7 +25,8 @@ public class Turret extends SubsystemBase {
 
   private final LoggedTalonFX turretMotor;
   private final MotionMagicVoltage mmControl = new MotionMagicVoltage(0);
-  private final LoggedTunableNumber homingSpeed = new LoggedTunableNumber("Turret/homingSpeed",-0.1);
+  private final LoggedTunableNumber homingSpeed =
+      new LoggedTunableNumber("Turret/homingSpeed", -0.1);
   private final DutyCycleOut homingControl = new DutyCycleOut(homingSpeed.get());
   private final LoggedDIO forwardLimit;
   private final LoggedDIO reverseLimit;
@@ -76,16 +76,6 @@ public class Turret extends SubsystemBase {
                   .withLimitForwardMotion(forwardLimit.get())
                   .withLimitReverseMotion(reverseLimit.get()));
         });
-  }
-  public Command homeCommand() {
-    return startEnd(
-        ()-> {
-          positionControl = false;
-          turretMotor.setControl(homingControl);
-        }, () -> {
-          turretMotor.setControl();
-        }
-    ).until(reverseLimit);
   }
 
   @Override
