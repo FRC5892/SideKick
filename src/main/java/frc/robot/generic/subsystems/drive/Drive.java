@@ -183,6 +183,8 @@ public class Drive extends SubsystemBase {
 
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+
+    Logger.recordOutput("Odometry/Robot", getPose());
   }
 
   /**
@@ -290,7 +292,7 @@ public class Drive extends SubsystemBase {
   }
 
   /** Returns the current odometry pose. */
-  @AutoLogOutput(key = "Odometry/Robot")
+  // @AutoLogOutput(key = "Odometry/Robot")
   public Pose2d getPose() {
     return poseEstimator.getEstimatedPosition();
   }

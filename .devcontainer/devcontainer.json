@@ -1,12 +1,6 @@
 {
   "image": "mcr.microsoft.com/devcontainers/universal:4",
   "postCreateCommand": "cd /opt && wget 'https://github.com/wpilibsuite/vscode-wpilib/releases/download/v2025.3.2/vscode-wpilib-2025.3.2.vsix'",
-  "features": {
-    "desktop-lite": {
-      "password": "FRC",
-      "webPort": "6080"
-    }
-  },
   "customizations": {
     "vscode": {
       "extensions": [

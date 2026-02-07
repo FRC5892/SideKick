@@ -25,7 +25,8 @@ public class SwerveBuilder {
    * @param driveController the controller to bind buttons to, traditionally in port 0
    * @return Drive subsystem, for further integration
    */
-  public static Drive buildDefaultDrive(CommandXboxController driveController) {
+  public static Drive buildDefaultDrive(
+      CommandXboxController driveController, double speedMultiplier) {
     Drive drive;
     switch (Constants.currentMode) {
       case REAL:
@@ -64,9 +65,9 @@ public class SwerveBuilder {
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive,
-            () -> -driveController.getLeftY(),
-            () -> -driveController.getLeftX(),
-            () -> driveController.getRightX()));
+            () -> driveController.getLeftY() * speedMultiplier,
+            () -> driveController.getLeftX() * speedMultiplier,
+            () -> driveController.getRightX() * speedMultiplier));
     driveController
         .y()
         .onTrue(
@@ -77,5 +78,9 @@ public class SwerveBuilder {
                     drive)
                 .ignoringDisable(true));
     return drive;
+  }
+
+  public static Drive buildDefaultDrive(CommandXboxController driveController) {
+    return buildDefaultDrive(driveController, 1);
   }
 }

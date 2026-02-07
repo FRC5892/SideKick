@@ -60,15 +60,22 @@ public class DriveConstants {
       Underrotated → pointing toward the robot’s left (your right)
   */
   public static final Rotation2d frontLeftZeroRotation =
-      new Rotation2d(-0.7853181997882291).minus(new Rotation2d(Degrees.of(16 + 5)));
+      new Rotation2d(-0.7853181997882291)
+          .minus(new Rotation2d(Degrees.of(16 + 5)))
+          .minus(Rotation2d.kCW_90deg);
   public static final Rotation2d frontRightZeroRotation =
-      new Rotation2d(-1.9785268942462368).minus(new Rotation2d(Degrees.of(-7 - 3)));
+      new Rotation2d(-1.9785268942462368)
+          .minus(new Rotation2d(Degrees.of(-7 - 3)))
+          .minus(Rotation2d.kCW_90deg);
   public static final Rotation2d backLeftZeroRotation =
       new Rotation2d(1.2279650529278354)
           .minus(new Rotation2d(Degrees.of(-8)))
-          .minus(Rotation2d.kCCW_90deg);
+          .minus(Rotation2d.kCCW_90deg)
+          .minus(Rotation2d.kCW_90deg);
   public static final Rotation2d backRightZeroRotation =
-      new Rotation2d(-0.8600462118731901).minus(new Rotation2d(Degrees.of(17.5 + 2)));
+      new Rotation2d(-0.8600462118731901)
+          .minus(new Rotation2d(Degrees.of(17.5 + 2)))
+          .minus(Rotation2d.kCW_90deg);
 
   // Device CAN IDs
   public static final int pigeonCanId = 13;
@@ -90,7 +97,7 @@ public class DriveConstants {
 
   // Drive motor configuration
   public static final int driveMotorCurrentLimit = 50;
-  public static final double wheelRadiusMeters = Units.inchesToMeters(2);
+  public static final double wheelRadiusMeters = Units.inchesToMeters(1.981);
   public static final double driveMotorReduction = 5.14; // SDS mk4 with L4 gearing
   public static final DCMotor driveGearbox = DCMotor.getNeoVortex(1);
 
@@ -101,10 +108,11 @@ public class DriveConstants {
       (2 * Math.PI) / 60.0 / driveMotorReduction; // Rotor RPM -> Wheel Rad/Sec
 
   // Drive PID configuration
+  //
   public static final double driveKp = 0.0;
   public static final double driveKd = 0.0;
-  public static final double driveKs = 0.0;
-  public static final double driveKv = 0.1;
+  public static final double driveKs = 0.11605;
+  public static final double driveKv = 0.11034;
   public static final double driveSimP = 0.05;
   public static final double driveSimD = 0.0;
   public static final double driveSimKs = 0.0;
