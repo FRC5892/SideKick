@@ -35,13 +35,13 @@ public class Shooter {
         hood =
             new Hood(
                 new PhoenixTalonFX(27, bus, "Hood"),
-                new HardwareDIO("HoodReverse", 1),
-                new HardwareDIO("HoodForward", 2));
+                SimDIO.fromNT("HoodReverse"),
+                SimDIO.fromNT("HoodForward"));
         turret =
             new Turret(
                 new PhoenixTalonFX(28, bus, "Turret"),
-                new HardwareDIO("TurretReverse", 2),
-                new HardwareDIO("TurretForward", 3),
+                SimDIO.fromNT("TurretReverse"),
+                SimDIO.fromNT("TurretForward"),
                 new HardwareAnalogInput("TurretPot", 0));
       }
       case SIM -> {
