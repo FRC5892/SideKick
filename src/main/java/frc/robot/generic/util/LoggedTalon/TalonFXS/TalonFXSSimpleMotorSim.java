@@ -41,8 +41,8 @@ public class TalonFXSSimpleMotorSim extends BaseTalonFXSSim {
     motorSim =
         new DCMotorSim(
             LinearSystemId.createDCMotorSystem(
-                DCMotor.getNeo550(followers.length + 1), J_KgMetersSquared, gearReduction),
-            DCMotor.getNeo550(followers.length + 1));
+                DCMotor.getMinion(followers.length + 1), J_KgMetersSquared, gearReduction),
+            DCMotor.getMinion(followers.length + 1));
   }
 
   @Override

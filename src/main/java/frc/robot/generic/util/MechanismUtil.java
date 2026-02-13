@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.generic.util.LoggedDIO.LoggedDIO;
-import frc.robot.generic.util.LoggedTalon.TalonFX.LoggedTalonFX;
+import frc.robot.generic.util.LoggedTalon.LoggedTalon;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -20,7 +20,7 @@ public class MechanismUtil {
    * toward the limit switch, backing off at a slower speed, and moving towards the limit switch to
    * gain a more precise position
    *
-   * @param talonFX the motor that needs to be homed
+   * @param talon the motor that needs to be homed
    * @param limitSwitch the digital signal that flips to true when the mechanism is at it's stopping
    *     point
    * @param subsystem the subsystem that is required for this command
@@ -34,7 +34,7 @@ public class MechanismUtil {
    *     confirmVoltage} is 0 to disable confirmation, this value is unread and can be null
    */
   public static Command buildHomingCommand(
-      LoggedTalonFX talonFX,
+      LoggedTalon<?> talon,
       LoggedDIO limitSwitch,
       Subsystem subsystem,
       DoubleSupplier initialVoltage,
@@ -46,8 +46,8 @@ public class MechanismUtil {
     NeutralOut neutral = new NeutralOut();
     Runnable towardPeriodic =
         forward
-            ? () -> talonFX.setControl(out.withLimitForwardMotion(limitSwitch.get()))
-            : () -> talonFX.setControl(out.withLimitReverseMotion(limitSwitch.get()));
+            ? () -> talon.setControl(out.withLimitForwardMotion(limitSwitch.get()))
+            : () -> talon.setControl(out.withLimitReverseMotion(limitSwitch.get()));
     Command command =
         new FunctionalCommand(
             () -> {
@@ -58,21 +58,21 @@ public class MechanismUtil {
             // Only set the position if we are done homing and confirm is not wanted
             confirmVoltage.getAsDouble() == 0
                 ? (interrupted) -> {
-                  talonFX.setControl(neutral);
+                  talon.setControl(neutral);
                   if (!interrupted) {
-                    talonFX.setPosition(switchPosition.get());
+                    talon.setPosition(switchPosition.get());
                   }
                 }
                 : (interrupted) -> {
-                  talonFX.setControl(neutral);
+                  talon.setControl(neutral);
                 },
             limitSwitch,
             subsystem);
     if (confirmVoltage.getAsDouble() != 0) {
       Runnable awayPeriodic =
           forward
-              ? () -> talonFX.setControl(out.withLimitReverseMotion(limitSwitch.get()))
-              : () -> talonFX.setControl(out.withLimitForwardMotion(limitSwitch.get()));
+              ? () -> talon.setControl(out.withLimitReverseMotion(limitSwitch.get()))
+              : () -> talon.setControl(out.withLimitForwardMotion(limitSwitch.get()));
       command =
           command.andThen(
               // Now away from stop
@@ -82,10 +82,10 @@ public class MechanismUtil {
                     awayPeriodic.run();
                   },
                   awayPeriodic,
-                  (interrupted) -> talonFX.setControl(neutral),
+                  (interrupted) -> talon.setControl(neutral),
                   forward
-                      ? () -> talonFX.getPosition().lte(confirmPosition.get())
-                      : () -> talonFX.getPosition().gte(confirmPosition.get()),
+                      ? () -> talon.getPosition().lte(confirmPosition.get())
+                      : () -> talon.getPosition().gte(confirmPosition.get()),
                   subsystem),
               // Now back to the stop
               new FunctionalCommand(
@@ -95,9 +95,9 @@ public class MechanismUtil {
                   },
                   towardPeriodic,
                   (interrupted) -> {
-                    talonFX.setControl(neutral);
+                    talon.setControl(neutral);
                     if (!interrupted) {
-                      talonFX.setPosition(switchPosition.get());
+                      talon.setPosition(switchPosition.get());
                     }
                   },
                   limitSwitch,

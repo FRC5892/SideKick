@@ -1,6 +1,7 @@
 package frc.robot.testing2026.subsystems.shooter;
 
 import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.Constants;
 import frc.robot.generic.util.LoggedAnalogInput.HardwareAnalogInput;
@@ -26,7 +27,11 @@ public class Shooter {
       case REAL -> {
         flywheel =
             new Flywheel(
-                new PhoenixTalonFX(25, bus, "Flywheel", new PhoenixTalonFollower(26, true)));
+                new PhoenixTalonFX(
+                    25,
+                    bus,
+                    "Flywheel",
+                    new PhoenixTalonFollower(26, MotorAlignmentValue.Opposed)));
         hood =
             new Hood(
                 new PhoenixTalonFX(27, bus, "Hood"),
@@ -48,7 +53,7 @@ public class Shooter {
                     "Flywheel",
                     0.0007567661,
                     1 / 1.25,
-                    new PhoenixTalonFollower(26, true)));
+                    new PhoenixTalonFollower(26, MotorAlignmentValue.Opposed)));
         hood =
             new Hood(
                 new TalonFXSimpleMotorSim(27, bus, "Hood", 0.0017154536, 1.3),

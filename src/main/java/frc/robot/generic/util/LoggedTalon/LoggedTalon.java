@@ -1,12 +1,6 @@
 package frc.robot.generic.util.LoggedTalon;
 
-import static edu.wpi.first.units.Units.Amp;
-import static edu.wpi.first.units.Units.Celsius;
-import static edu.wpi.first.units.Units.Radian;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Rotation;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Volt;
+import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
@@ -15,13 +9,7 @@ import com.ctre.phoenix6.configs.SlotConfigs;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.MutAngle;
-import edu.wpi.first.units.measure.MutAngularVelocity;
-import edu.wpi.first.units.measure.Temperature;
-import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
@@ -166,12 +154,12 @@ public abstract class LoggedTalon<T extends LoggedTalon<T>> {
     this.name = name;
     this.connectionAlerts = new Alert[followers + 1];
     this.connectionAlerts[0] =
-        new Alert("TalonFX" + name + " is not connected", Alert.AlertType.kError);
+        new Alert("Motor " + name + " is not connected", Alert.AlertType.kError);
     if (followers != 0) {
       for (int i = 1; i <= followers; i++) {
         connectionAlerts[i] =
             new Alert(
-                "TalonFX " + name + " follower " + i + " is not connected", Alert.AlertType.kError);
+                "Motor " + name + " follower " + i + " is not connected", Alert.AlertType.kError);
       }
     }
     inputs.torqueCurrentAmps = new double[followers + 1];
