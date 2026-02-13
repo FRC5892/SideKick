@@ -18,8 +18,7 @@ public class VisionConstants {
   // AprilTag layout
   public static AprilTagFieldLayout aprilTagLayout = FieldConstants.fieldLayout;
   // Camera names, must match names configured on coprocessor
-  public static String camera0Name = "camera_0";
-  public static String camera1Name = "camera_1";
+  public static String camera0Name = "front";
 
   // Robot to camera transforms
   // (Not used by Limelight, configure in web UI instead)
