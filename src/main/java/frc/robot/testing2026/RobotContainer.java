@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.generic.Robot;
+import frc.robot.generic.RobotState;
 import frc.robot.generic.commands.DriveCommands;
 import frc.robot.generic.subsystems.drive.Drive;
 import frc.robot.generic.subsystems.vision.Vision;
@@ -20,7 +21,6 @@ import frc.robot.generic.util.AbstractRobotContainer;
 import frc.robot.generic.util.RobotConfig;
 import frc.robot.generic.util.SwerveBuilder;
 import frc.robot.testing2026.subsystems.shooter.Shooter;
-import frc.robot.testing2026.subsystems.shooter.ShotCalculator;
 import frc.robot.testing2026.subsystems.shooter.ShotCalculator.Goal;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -46,13 +46,21 @@ public class RobotContainer implements AbstractRobotContainer {
 
     switch (Constants.currentMode) {
       case REAL -> {
-        vision = new Vision(drive::addVisionMeasurement, new VisionIOPhotonVision(VisionConstants.camera0Name, VisionConstants.robotToCamera0));
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOPhotonVision(
+                    VisionConstants.camera0Name, VisionConstants.robotToCamera0));
       }
       case SIM -> {
-        vision = new Vision(drive::addVisionMeasurement, new VisionIOPhotonVisionSim(VisionConstants.camera0Name,VisionConstants.robotToCamera0, drive::getPose));
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOPhotonVisionSim(
+                    VisionConstants.camera0Name, VisionConstants.robotToCamera0, drive::getPose));
       }
       default -> {
-        vision = new Vision(drive::addVisionMeasurement, new VisionIO(){});
+        vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
       }
     }
 
@@ -88,9 +96,9 @@ public class RobotContainer implements AbstractRobotContainer {
   private void configureButtonBindings() {
     controller.a().onTrue(ShootCommands.shoot(shooter));
 
-    controller.x().onTrue(ShotCalculator.getInstance().setGoalCommand(Goal.LEFT));
-    controller.b().onTrue(ShotCalculator.getInstance().setGoalCommand(Goal.RIGHT));
-    controller.y().onTrue(ShotCalculator.getInstance().setGoalCommand(Goal.HUB));
+    controller.x().onTrue(RobotState.getInstance().setGoalCommand(Goal.LEFT));
+    controller.b().onTrue(RobotState.getInstance().setGoalCommand(Goal.RIGHT));
+    controller.y().onTrue(RobotState.getInstance().setGoalCommand(Goal.HUB));
   }
 
   /**

@@ -1,8 +1,6 @@
 package frc.robot.testing2026.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
@@ -27,54 +25,67 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
-import frc.robot.Constants.Mode;
 import frc.robot.generic.RobotState;
+import frc.robot.generic.util.LoggedAnalogInput.LoggedAnalogInput;
 import frc.robot.generic.util.LoggedDIO.LoggedDIO;
 import frc.robot.generic.util.LoggedTalon.TalonFX.LoggedTalonFX;
 import frc.robot.generic.util.LoggedTunableMeasure;
 import frc.robot.generic.util.LoggedTunableNumber;
+import frc.robot.generic.util.MechanismUtil;
 import java.util.function.Supplier;
 import lombok.Getter;
 import lombok.Setter;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Turret extends SubsystemBase {
+
+  /* Hardware */
   private final LoggedTalonFX motor;
   private final LoggedDIO reverseLimit;
   private final LoggedDIO forwardLimit;
+  private final LoggedAnalogInput pot;
 
+  /* Movement Constants */
   private final LoggedTunableMeasure<MutAngle> minAngle =
       new LoggedTunableMeasure<MutAngle>("Turret/MinAngle", Degrees.mutable(-190));
   private final LoggedTunableMeasure<MutAngle> maxAngle =
       new LoggedTunableMeasure<MutAngle>("Turret/MaxAngle", Degrees.mutable(200));
-
+  /* Homing */
   private final LoggedTunableNumber homingVoltage =
       new LoggedTunableNumber("Turret/Homing/Voltage", 4, "v");
   private final LoggedTunableNumber homingConfirmationVoltage =
       new LoggedTunableNumber("Turret/Homing/ConfirmVoltage", 4, "v");
   private final LoggedTunableMeasure<MutAngle> homingSwitchPosition =
-      new LoggedTunableMeasure<>("Turret/Homing/homePosition", Rotations.mutable(0));
+      new LoggedTunableMeasure<>("Turret/Homing/homePosition", Degrees.mutable(0));
   private final LoggedTunableMeasure<MutAngle> homingConfirmPosition =
-      new LoggedTunableMeasure<>("Turret/Homing/homePosition", Rotations.mutable(0.1));
+      new LoggedTunableMeasure<>("Turret/Homing/homePosition", Degrees.mutable(0.1));
   private final LoggedTunableMeasure<MutAngle> tolerance =
       new LoggedTunableMeasure<>("Turret/Tolerance", Degrees.mutable(5));
+  private final LoggedTunableMeasure<MutAngle> pot0Pose =
+      new LoggedTunableMeasure<MutAngle>("Turret/Pot/0Pose", Degrees.mutable(-215));
+  private final LoggedTunableMeasure<MutAngle> potRange =
+      new LoggedTunableMeasure<MutAngle>("Turret/Pot/Range", Degrees.mutable(-215));
 
-  private final Translation3d turretVisual = new Translation3d(0, 0, Units.inchesToMeters(20));
-
+  /* Control Requests */
   private final MotionMagicTorqueCurrentFOC mmControl = new MotionMagicTorqueCurrentFOC(0);
   private final NeutralOut neutralControl = new NeutralOut();
 
-  private final MutAngle targetPosition = Degree.mutable(0);
-
+  /* Variables */
+  private final MutAngle targetPosition = Degrees.mutable(0);
+  @AutoLogOutput private final MutAngle potPose = Degrees.mutable(0);
   private boolean positionControl = false;
   @Setter private boolean homed = false;
   @Getter private boolean atSetpoint = false;
 
-  public Turret(LoggedTalonFX motor, LoggedDIO reverseLimit, LoggedDIO forwardLimit) {
+  private final Translation3d turretVisual = new Translation3d(0, 0, Units.inchesToMeters(20));
+
+  public Turret(
+      LoggedTalonFX motor, LoggedDIO reverseLimit, LoggedDIO forwardLimit, LoggedAnalogInput pot) {
     this.motor = motor;
     this.reverseLimit = reverseLimit.withReversed(true);
     this.forwardLimit = forwardLimit.withReversed(true);
+    this.pot = pot;
 
     var config =
         new TalonFXConfiguration()
@@ -91,9 +102,7 @@ public class Turret extends SubsystemBase {
             .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(15));
     motor.withConfig(config).withMMPIDTuning(SlotConfigs.from(config.Slot0), config.MotionMagic);
     setDefaultCommand(aimCommand());
-    if (Constants.currentMode == Mode.SIM) {
-      SmartDashboard.putData("Turret/SetHomed", setHomed());
-    }
+    SmartDashboard.putData("Turret/SetHomed", setHomed());
     // Preload so AdvantageKit can process logging stuff before the match starts.
     ShotCalculator.getInstance().calculateShot();
   }
@@ -106,6 +115,29 @@ public class Turret extends SubsystemBase {
                 ShotCalculator.getInstance().calculateShot().turretAngle().getMeasure());
           }
         });
+  }
+
+  public Command homingCommand() {
+    return MechanismUtil.buildHomingCommand(
+            motor,
+            reverseLimit,
+            this,
+            homingVoltage,
+            false,
+            homingSwitchPosition::get,
+            homingConfirmationVoltage::get,
+            homingConfirmPosition::get)
+        .beforeStarting(() -> positionControl = false)
+        .finallyDo(
+            (i) -> {
+              if (!i) {
+                setHomed(true);
+              }
+            });
+  }
+
+  public void updateFromAbsolute() {
+    motor.setPosition(potPose);
   }
 
   /**
@@ -160,6 +192,11 @@ public class Turret extends SubsystemBase {
     motor.periodic();
     reverseLimit.periodic();
     forwardLimit.periodic();
+    pot.periodic();
+
+    potPose.mut_setBaseUnitMagnitude(
+        (pot.get() * potRange.get().baseUnitMagnitude()) - pot0Pose.get().baseUnitMagnitude());
+
     atSetpoint = motor.atSetpoint(targetPosition, tolerance.get());
     Logger.recordOutput("Turret/AtSetpoint", atSetpoint);
     Logger.recordOutput("Turret/Homed", homed);
@@ -172,8 +209,7 @@ public class Turret extends SubsystemBase {
         new Pose3d(RobotState.getInstance().getRobotPosition())
             .transformBy(
                 new Transform3d(
-                    turretVisual,
-                    new Rotation3d(Rotations.zero(), Rotations.zero(), targetPosition))));
+                    turretVisual, new Rotation3d(Degrees.zero(), Degrees.zero(), targetPosition))));
   }
 
   private void setControl() {

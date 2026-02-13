@@ -10,7 +10,9 @@ package frc.robot.generic.subsystems.vision;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.util.Units;
 import frc.robot.testing2026.FieldConstants;
+import org.littletonrobotics.junction.Logger;
 
 public class VisionConstants {
   // AprilTag layout
@@ -22,7 +24,11 @@ public class VisionConstants {
   // Robot to camera transforms
   // (Not used by Limelight, configure in web UI instead)
   public static Transform3d robotToCamera0 =
-      new Transform3d(0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, 0.0));
+      new Transform3d(
+          Units.inchesToMeters(8),
+          Units.inchesToMeters(9.5 - .25),
+          Units.inchesToMeters(9.5),
+          new Rotation3d(0.0, Units.degreesToRadians(-34), 0.0));
   public static Transform3d robotToCamera1 =
       new Transform3d(-0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, Math.PI));
 
@@ -47,4 +53,8 @@ public class VisionConstants {
   public static double linearStdDevMegatag2Factor = 0.5; // More stable than full 3D solve
   public static double angularStdDevMegatag2Factor =
       Double.POSITIVE_INFINITY; // No rotation data available
+
+  static {
+    Logger.recordOutput("Vision/camera0Name", robotToCamera0);
+  }
 }
