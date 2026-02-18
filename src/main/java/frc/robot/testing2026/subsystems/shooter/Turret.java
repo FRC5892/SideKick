@@ -96,13 +96,14 @@ public class Turret extends SubsystemBase {
                     .withMotionMagicAcceleration(30))
             .withMotorOutput(
                 new MotorOutputConfigs()
-                    .withNeutralMode(NeutralModeValue.Brake)
+                    .withNeutralMode(
+                        NeutralModeValue.Coast) // TODO: change back after fiddling is done
                     .withInverted(InvertedValue.Clockwise_Positive))
             .withCurrentLimits(new CurrentLimitsConfigs().withStatorCurrentLimit(5))
-            .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(15));
+            .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(44));
     motor.withConfig(config).withMMPIDTuning(SlotConfigs.from(config.Slot0), config.MotionMagic);
     setDefaultCommand(aimCommand());
-    SmartDashboard.putData("Turret/SetHomed", setHomed());
+    SmartDashboard.putData("Turret/ForceZero", forceZero());
     // Preload so AdvantageKit can process logging stuff before the match starts.
     ShotCalculator.getInstance().calculateShot();
   }
@@ -183,8 +184,13 @@ public class Turret extends SubsystemBase {
         this);
   }
 
-  public Command setHomed() {
-    return runOnce(() -> this.setHomed(true)).ignoringDisable(true);
+  public Command forceZero() {
+    return runOnce(
+            () -> {
+              motor.setPosition(Degrees.of(0));
+              this.setHomed(true);
+            })
+        .ignoringDisable(true);
   }
 
   @Override
@@ -223,3 +229,7 @@ public class Turret extends SubsystemBase {
     }
   }
 }
+
+// primary: 12:48, 4:1
+// secondary: 10:110, 11:1
+// total: 44:1

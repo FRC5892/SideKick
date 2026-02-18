@@ -25,18 +25,24 @@ public class Shooter {
   public Shooter(CANBus bus) {
     switch (Constants.currentMode) {
       case REAL -> {
-        flywheel =
-            new Flywheel(
-                new PhoenixTalonFX(
-                    25,
-                    bus,
-                    "Flywheel",
-                    new PhoenixTalonFollower(26, MotorAlignmentValue.Opposed)));
+        // flywheel =
+        //     new Flywheel(
+        //         new PhoenixTalonFX(
+        //             25,
+        //             bus,
+        //             "Flywheel",
+        //             new PhoenixTalonFollower(26, MotorAlignmentValue.Opposed)));
+        // hood =
+        //     new Hood(
+        //         new PhoenixTalonFX(27, bus, "Hood"),
+        //         SimDIO.fromNT("HoodReverse"),
+        //         SimDIO.fromNT("HoodForward"));
+        flywheel = new Flywheel(new NoOppTalonFX("Flywheel", 1));
         hood =
             new Hood(
-                new PhoenixTalonFX(27, bus, "Hood"),
-                SimDIO.fromNT("HoodReverse"),
-                SimDIO.fromNT("HoodForward"));
+                new NoOppTalonFX("Hood", 0),
+                new HardwareDIO("HoodReverse", 1),
+                new HardwareDIO("HoodForward", 2));
         turret =
             new Turret(
                 new PhoenixTalonFX(28, bus, "Turret"),

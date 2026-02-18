@@ -22,6 +22,7 @@ import frc.robot.generic.util.RobotConfig;
 import frc.robot.generic.util.SwerveBuilder;
 import frc.robot.testing2026.subsystems.shooter.Shooter;
 import frc.robot.testing2026.subsystems.shooter.ShotCalculator.Goal;
+import org.littletonrobotics.junction.AutoLogOutputManager;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer implements AbstractRobotContainer {
@@ -42,6 +43,7 @@ public class RobotContainer implements AbstractRobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    AutoLogOutputManager.addPackage("frc.robot.testing2026");
     shooter = new Shooter(canBus);
 
     switch (Constants.currentMode) {
