@@ -160,7 +160,11 @@ public class ShotCalculator {
 
     // Calculate parameters accounted for imparted velocity
     turretAngle =
-        target.minus(lookaheadPose.getTranslation()).getAngle().minus(lookaheadPose.getRotation());
+        target
+            .minus(lookaheadPose.getTranslation())
+            .getAngle()
+            .minus(lookaheadPose.getRotation())
+            .plus(Rotation2d.k180deg);
     hoodAngle = shotHoodAngleMap.get(lookaheadTurretToTargetDistance);
     latestShot =
         new ShotParameters(

@@ -78,6 +78,8 @@ public class PhoenixTalonFXS extends LoggedTalonFXS {
     }
     velocitySignal = talonFX[0].getVelocity();
     positionSignal = talonFX[0].getPosition();
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        PhoenixUtil.kRioSignalUpdateFrequency, velocitySignal, positionSignal);
 
     PhoenixUtil.registerSignals(canBus, voltageSignal);
     PhoenixUtil.registerSignals(canBus, torqueCurrentSignal);

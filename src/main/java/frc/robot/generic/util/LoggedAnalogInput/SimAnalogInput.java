@@ -21,4 +21,9 @@ public class SimAnalogInput extends LoggedAnalogInput {
     LoggedNetworkNumber networkValue = new LoggedNetworkNumber("/Tuning/simInput/dio" + name, 0);
     return new SimAnalogInput(name, networkValue::get);
   }
+
+  @Override
+  public LoggedAnalogInput withAverageBits(int bits) {
+    return this;
+  }
 }

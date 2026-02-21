@@ -5,6 +5,7 @@
 package frc.robot.generic.util.LoggedAnalogInput;
 
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.RobotController;
 
 /** Add your docs here. */
 public class HardwareAnalogInput extends LoggedAnalogInput {
@@ -17,6 +18,12 @@ public class HardwareAnalogInput extends LoggedAnalogInput {
 
   @Override
   protected void updateInputs(AnalogInputsAutoLogged inputs) {
-    inputs.value = hardware.getAverageVoltage();
+    inputs.value = hardware.getAverageVoltage() / RobotController.getVoltage5V();
+  }
+
+  @Override
+  public LoggedAnalogInput withAverageBits(int bits) {
+    hardware.setAverageBits(bits);
+    return this;
   }
 }

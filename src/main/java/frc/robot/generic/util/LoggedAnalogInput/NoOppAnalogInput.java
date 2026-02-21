@@ -7,4 +7,9 @@ public class NoOppAnalogInput extends LoggedAnalogInput {
 
   @Override
   protected void updateInputs(AnalogInputsAutoLogged inputs) {}
+
+  @Override
+  public LoggedAnalogInput withAverageBits(int bits) {
+    return this;
+  }
 }

@@ -24,6 +24,8 @@ public abstract class LoggedAnalogInput implements DoubleSupplier {
     Logger.processInputs("DigitalInput/" + name, inputs);
   }
 
+  public abstract LoggedAnalogInput withAverageBits(int bits);
+
   protected abstract void updateInputs(AnalogInputsAutoLogged inputs);
 
   @AutoLog

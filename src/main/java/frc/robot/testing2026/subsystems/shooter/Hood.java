@@ -3,16 +3,18 @@ package frc.robot.testing2026.subsystems.shooter;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 
+import com.ctre.phoenix6.configs.CommutationConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.FeedbackConfigs;
+import com.ctre.phoenix6.configs.ExternalFeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.SlotConfigs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorArrangementValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rectangle2d;
@@ -25,10 +27,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.generic.RobotState;
 import frc.robot.generic.util.LoggedDIO.LoggedDIO;
-import frc.robot.generic.util.LoggedTalon.TalonFX.LoggedTalonFX;
+import frc.robot.generic.util.LoggedTalon.TalonFXS.LoggedTalonFXS;
 import frc.robot.generic.util.LoggedTunableMeasure;
 import frc.robot.generic.util.LoggedTunableNumber;
 import frc.robot.generic.util.MechanismUtil;
@@ -42,7 +43,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class Hood extends SubsystemBase {
   /* Hardware */
-  private final LoggedTalonFX motor;
+  private final LoggedTalonFXS motor;
   private final LoggedDIO reverseLimit;
   private final LoggedDIO forwardLimit;
 
@@ -78,13 +79,15 @@ public class Hood extends SubsystemBase {
   private final NeutralOut neutralControl = new NeutralOut();
   private final MotionMagicVoltage mmControl = new MotionMagicVoltage(targetPosition);
 
-  public Hood(LoggedTalonFX motor, LoggedDIO reverseLimit, LoggedDIO forwardLimit) {
+  public Hood(LoggedTalonFXS motor, LoggedDIO reverseLimit, LoggedDIO forwardLimit) {
     this.motor = motor;
     this.reverseLimit = reverseLimit;
     this.forwardLimit = forwardLimit;
     updateTrenchAreas();
     var config =
-        new TalonFXConfiguration()
+        new TalonFXSConfiguration()
+            .withCommutation(
+                new CommutationConfigs().withMotorArrangement(MotorArrangementValue.Minion_JST))
             .withSlot0(new Slot0Configs().withKP(0).withKI(0).withKD(0).withKS(0).withKV(0))
             .withMotionMagic(
                 new MotionMagicConfigs()
@@ -93,12 +96,12 @@ public class Hood extends SubsystemBase {
             .withMotorOutput(
                 new MotorOutputConfigs()
                     .withNeutralMode(NeutralModeValue.Brake)
-                    .withInverted(InvertedValue.Clockwise_Positive))
+                    .withInverted(InvertedValue.CounterClockwise_Positive))
             .withCurrentLimits(new CurrentLimitsConfigs().withStatorCurrentLimit(5))
-            .withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(15));
+            .withExternalFeedback(new ExternalFeedbackConfigs().withSensorToMechanismRatio(15));
     motor.withConfig(config).withMMPIDTuning(SlotConfigs.from(config.Slot0), config.MotionMagic);
-    setDefaultCommand(aimCommand());
-    new Trigger(this::shouldStow).whileTrue(stowCommand());
+    // setDefaultCommand(aimCommand());
+    // new Trigger(this::shouldStow).whileTrue(stowCommand());
 
     SmartDashboard.putData("Hood/SetHomed", runOnce(() -> setHomed(true)).ignoringDisable(true));
   }

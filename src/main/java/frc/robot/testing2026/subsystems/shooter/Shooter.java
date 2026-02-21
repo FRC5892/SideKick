@@ -14,6 +14,9 @@ import frc.robot.generic.util.LoggedTalon.TalonFX.NoOppTalonFX;
 import frc.robot.generic.util.LoggedTalon.TalonFX.PhoenixTalonFX;
 import frc.robot.generic.util.LoggedTalon.TalonFX.TalonFXFlywheelSim;
 import frc.robot.generic.util.LoggedTalon.TalonFX.TalonFXSimpleMotorSim;
+import frc.robot.generic.util.LoggedTalon.TalonFXS.NoOppTalonFXS;
+import frc.robot.generic.util.LoggedTalon.TalonFXS.PhoenixTalonFXS;
+import frc.robot.generic.util.LoggedTalon.TalonFXS.TalonFXSSimpleMotorSim;
 import lombok.Getter;
 
 /** Container for shooting bits. This class will initialize the proper IO interfaces. */
@@ -32,17 +35,12 @@ public class Shooter {
         //             bus,
         //             "Flywheel",
         //             new PhoenixTalonFollower(26, MotorAlignmentValue.Opposed)));
-        // hood =
-        //     new Hood(
-        //         new PhoenixTalonFX(27, bus, "Hood"),
-        //         SimDIO.fromNT("HoodReverse"),
-        //         SimDIO.fromNT("HoodForward"));
-        flywheel = new Flywheel(new NoOppTalonFX("Flywheel", 1));
         hood =
             new Hood(
-                new NoOppTalonFX("Hood", 0),
-                new HardwareDIO("HoodReverse", 1),
-                new HardwareDIO("HoodForward", 2));
+                new PhoenixTalonFXS(27, bus, "Hood"),
+                SimDIO.fromNT("HoodReverse"),
+                SimDIO.fromNT("HoodForward"));
+        flywheel = new Flywheel(new NoOppTalonFX("Flywheel", 1));
         turret =
             new Turret(
                 new PhoenixTalonFX(28, bus, "Turret"),
@@ -62,7 +60,7 @@ public class Shooter {
                     new PhoenixTalonFollower(26, MotorAlignmentValue.Opposed)));
         hood =
             new Hood(
-                new TalonFXSimpleMotorSim(27, bus, "Hood", 0.0017154536, 1.3),
+                new TalonFXSSimpleMotorSim(27, bus, "Hood", 0.0017154536, 1.3),
                 SimDIO.fromNT("HoodReverse"),
                 SimDIO.fromNT("HoodForward"));
         turret =
@@ -76,7 +74,7 @@ public class Shooter {
         flywheel = new Flywheel(new NoOppTalonFX("Flywheel", 1));
         hood =
             new Hood(
-                new NoOppTalonFX("Hood", 0),
+                new NoOppTalonFXS("Hood", 0),
                 new HardwareDIO("HoodReverse", 1),
                 new HardwareDIO("HoodForward", 2));
         turret =
