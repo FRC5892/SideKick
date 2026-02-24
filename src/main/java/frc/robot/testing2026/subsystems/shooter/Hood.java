@@ -98,7 +98,9 @@ public class Hood extends SubsystemBase {
                     .withNeutralMode(NeutralModeValue.Brake)
                     .withInverted(InvertedValue.CounterClockwise_Positive))
             .withCurrentLimits(new CurrentLimitsConfigs().withStatorCurrentLimit(5))
-            .withExternalFeedback(new ExternalFeedbackConfigs().withSensorToMechanismRatio(15));
+            .withExternalFeedback(new ExternalFeedbackConfigs().withSensorToMechanismRatio(36));
+    // 12t pulley -> 24t, 10t gear -> 180t spur gear
+    // 2:1 * 18:1 = 36:1 overall
     motor.withConfig(config).withMMPIDTuning(SlotConfigs.from(config.Slot0), config.MotionMagic);
     // setDefaultCommand(aimCommand());
     // new Trigger(this::shouldStow).whileTrue(stowCommand());

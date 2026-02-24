@@ -106,7 +106,8 @@ public class RobotContainer implements AbstractRobotContainer {
     controller.x().onTrue(shooter.getTurret().gotoPosition(() -> Degree.of(-120)));
     controller.a().onTrue(shooter.getTurret().gotoPosition(() -> Degree.of(0)));
     controller.b().onTrue(shooter.getTurret().gotoPosition(() -> Degree.of(120)));
-    controller.rightBumper().onTrue(shooter.getHood().gotoAngle(() -> Rotation2d.fromDegrees(20)));
+    controller.rightBumper().onTrue(shooter.getHood().gotoAngle(() -> Rotation2d.fromDegrees(19)));
+    controller.leftBumper().onTrue(shooter.getHood().gotoAngle(() -> Rotation2d.fromDegrees(38)));
   }
 
   /**
