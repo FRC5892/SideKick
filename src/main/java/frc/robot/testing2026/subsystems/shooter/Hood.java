@@ -11,7 +11,7 @@ import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.SlotConfigs;
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
@@ -77,7 +77,8 @@ public class Hood extends SubsystemBase {
 
   /* Control  Requests*/
   private final NeutralOut neutralControl = new NeutralOut();
-  private final MotionMagicVoltage mmControl = new MotionMagicVoltage(targetPosition);
+  private final MotionMagicTorqueCurrentFOC mmControl =
+      new MotionMagicTorqueCurrentFOC(targetPosition);
 
   public Hood(LoggedTalonFXS motor, LoggedDIO reverseLimit, LoggedDIO forwardLimit) {
     this.motor = motor;
