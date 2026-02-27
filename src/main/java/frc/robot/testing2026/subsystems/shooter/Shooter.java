@@ -7,7 +7,7 @@ import frc.robot.Constants;
 import frc.robot.generic.util.LoggedAnalogInput.HardwareAnalogInput;
 import frc.robot.generic.util.LoggedAnalogInput.NoOppAnalogInput;
 import frc.robot.generic.util.LoggedAnalogInput.SimAnalogInput;
-import frc.robot.generic.util.LoggedDIO.HardwareDIO;
+import frc.robot.generic.util.LoggedDIO.NoOppDio;
 import frc.robot.generic.util.LoggedDIO.SimDIO;
 import frc.robot.generic.util.LoggedTalon.Follower.PhoenixTalonFollower;
 import frc.robot.generic.util.LoggedTalon.TalonFX.NoOppTalonFX;
@@ -35,11 +35,7 @@ public class Shooter {
         //             bus,
         //             "Flywheel",
         //             new PhoenixTalonFollower(26, MotorAlignmentValue.Opposed)));
-        hood =
-            new Hood(
-                new PhoenixTalonFXS(27, bus, "Hood"),
-                SimDIO.fromNT("HoodReverse"),
-                SimDIO.fromNT("HoodForward"));
+        hood = new Hood(new PhoenixTalonFXS(27, bus, "Hood"));
         flywheel = new Flywheel(new NoOppTalonFX("Flywheel", 1));
         turret =
             new Turret(
@@ -58,11 +54,7 @@ public class Shooter {
                     0.0007567661,
                     1 / 1.25,
                     new PhoenixTalonFollower(26, MotorAlignmentValue.Opposed)));
-        hood =
-            new Hood(
-                new TalonFXSSimpleMotorSim(27, bus, "Hood", 0.0017154536, 1.3),
-                SimDIO.fromNT("HoodReverse"),
-                SimDIO.fromNT("HoodForward"));
+        hood = new Hood(new TalonFXSSimpleMotorSim(27, bus, "Hood", 0.0017154536, 1.3));
         turret =
             new Turret(
                 new TalonFXSimpleMotorSim(28, bus, "Turret", 0.0307668163, 1.25),
@@ -72,22 +64,18 @@ public class Shooter {
       }
       default -> {
         flywheel = new Flywheel(new NoOppTalonFX("Flywheel", 1));
-        hood =
-            new Hood(
-                new NoOppTalonFXS("Hood", 0),
-                new HardwareDIO("HoodReverse", 1),
-                new HardwareDIO("HoodForward", 2));
+        hood = new Hood(new NoOppTalonFXS("Hood", 0));
         turret =
             new Turret(
                 new NoOppTalonFX("Turret", 0),
-                new HardwareDIO("TurretReverse", 2),
-                new HardwareDIO("TurretForward", 3),
+                new NoOppDio("TurretReverse"),
+                new NoOppDio("TurretForward"),
                 new NoOppAnalogInput("TurretPot"));
       }
     }
   }
 
   public ParallelCommandGroup homeCommand() {
-    return new ParallelCommandGroup(hood.homingCommand(), turret.homingCommand());
+    return new ParallelCommandGroup(/*hood.homingCommand(), */ turret.homingCommand());
   }
 }

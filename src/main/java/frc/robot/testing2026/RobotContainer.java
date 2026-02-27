@@ -1,7 +1,5 @@
 package frc.robot.testing2026;
 
-import static edu.wpi.first.units.Units.Degree;
-
 import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -103,9 +101,12 @@ public class RobotContainer implements AbstractRobotContainer {
     // controller.x().onTrue(RobotState.getInstance().setGoalCommand(Goal.LEFT));
     // controller.b().onTrue(RobotState.getInstance().setGoalCommand(Goal.RIGHT));
     // controller.y().onTrue(RobotState.getInstance().setGoalCommand(Goal.HUB));
-    controller.x().onTrue(shooter.getTurret().gotoPosition(() -> Degree.of(-120)));
-    controller.a().onTrue(shooter.getTurret().gotoPosition(() -> Degree.of(0)));
-    controller.b().onTrue(shooter.getTurret().gotoPosition(() -> Degree.of(120)));
+    // controller.x().onTrue(shooter.getTurret().gotoPosition(() -> Degree.of(-120)));
+    // controller.a().onTrue(shooter.getTurret().gotoPosition(() -> Degree.of(0)));
+    // controller.b().onTrue(shooter.getTurret().gotoPosition(() -> Degree.of(120)));
+    controller.a().whileTrue(shooter.getHood().dutyCycleTestCommand(0.1));
+    controller.b().whileTrue(shooter.getHood().dutyCycleTestCommand(-0.1));
+
     controller.rightBumper().onTrue(shooter.getHood().gotoAngle(() -> Rotation2d.fromDegrees(19)));
     controller.leftBumper().onTrue(shooter.getHood().gotoAngle(() -> Rotation2d.fromDegrees(38)));
   }

@@ -11,7 +11,8 @@ import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.SlotConfigs;
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.MotionMagicDutyCycle;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorArrangementValue;
@@ -28,11 +29,9 @@ import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.generic.RobotState;
-import frc.robot.generic.util.LoggedDIO.LoggedDIO;
 import frc.robot.generic.util.LoggedTalon.TalonFXS.LoggedTalonFXS;
 import frc.robot.generic.util.LoggedTunableMeasure;
 import frc.robot.generic.util.LoggedTunableNumber;
-import frc.robot.generic.util.MechanismUtil;
 import frc.robot.testing2026.FieldConstants.LinesHorizontal;
 import frc.robot.testing2026.FieldConstants.LinesVertical;
 import java.util.function.Supplier;
@@ -44,8 +43,6 @@ import org.littletonrobotics.junction.Logger;
 public class Hood extends SubsystemBase {
   /* Hardware */
   private final LoggedTalonFXS motor;
-  private final LoggedDIO reverseLimit;
-  private final LoggedDIO forwardLimit;
 
   /* Movement Constants */
   private final LoggedTunableMeasure<MutAngle> downPosition =
@@ -77,13 +74,11 @@ public class Hood extends SubsystemBase {
 
   /* Control  Requests*/
   private final NeutralOut neutralControl = new NeutralOut();
-  private final MotionMagicTorqueCurrentFOC mmControl =
-      new MotionMagicTorqueCurrentFOC(targetPosition);
+  private final MotionMagicDutyCycle mmControl = new MotionMagicDutyCycle(targetPosition);
+  private final DutyCycleOut dutyCycleOut = new DutyCycleOut(0);
 
-  public Hood(LoggedTalonFXS motor, LoggedDIO reverseLimit, LoggedDIO forwardLimit) {
+  public Hood(LoggedTalonFXS motor) {
     this.motor = motor;
-    this.reverseLimit = reverseLimit;
-    this.forwardLimit = forwardLimit;
     updateTrenchAreas();
     var config =
         new TalonFXSConfiguration()
@@ -98,7 +93,7 @@ public class Hood extends SubsystemBase {
                 new MotorOutputConfigs()
                     .withNeutralMode(NeutralModeValue.Brake)
                     .withInverted(InvertedValue.CounterClockwise_Positive))
-            .withCurrentLimits(new CurrentLimitsConfigs().withStatorCurrentLimit(5))
+            .withCurrentLimits(new CurrentLimitsConfigs().withStatorCurrentLimit(15))
             .withExternalFeedback(new ExternalFeedbackConfigs().withSensorToMechanismRatio(36));
     // 12t pulley -> 24t, 10t gear -> 180t spur gear
     // 2:1 * 18:1 = 36:1 overall
@@ -127,24 +122,11 @@ public class Hood extends SubsystemBase {
         .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
   }
 
-  public Command homingCommand() {
-    return MechanismUtil.buildHomingCommand(
-            motor,
-            reverseLimit,
-            this,
-            homingVoltage,
-            false,
-            homingSwitchPosition::get,
-            homingConfirmationVoltage,
-            homingConfirmPosition::get)
-        .beforeStarting(() -> positionControl = false)
-        .finallyDo(
-            (i) -> {
-              if (!i) {
-                setHomed(true);
-              }
-            });
-  }
+  // public Command homingCommand() {
+  //   return new FunctionalCommand(()->{this.positionControl=false;
+  //     motor.setControl(dutyCycleOut.withOutput(0));
+  //   }, ()->{}), null, null, null)
+  // }
 
   /**
    * A command that requests the turret to move to a robot-relative angle. The command completes
@@ -167,8 +149,7 @@ public class Hood extends SubsystemBase {
   public void requestAngle(Rotation2d angle) {
     Logger.recordOutput("Hood/RequestedAngle", angle.getDegrees(), "deg");
     angleToPosition(angle, targetPosition);
-    positionControl = true;
-    setControl();
+    motor.setControl(mmControl.withPosition(targetPosition));
   }
 
   /**
@@ -235,30 +216,11 @@ public class Hood extends SubsystemBase {
   @Override
   public final void periodic() {
     motor.periodic();
-    reverseLimit.periodic();
-    forwardLimit.periodic();
     atSetpoint = motor.atSetpoint(targetPosition, tolerance.get());
     Logger.recordOutput("Hood/Angle", positionToAngle(motor.getPosition()).getDegrees(), "deg");
 
     ShotCalculator.getInstance().clearCache();
     LoggedTunableNumber.ifChanged(this, (value) -> this.updateTrenchAreas(), stowTrenchGapOffset);
-
-    setControl();
-  }
-
-  /**
-   * Set the control of the motor based on the current {@link #targetPosition}. If {@link
-   * #positionControl} is false, this does nothing. This should be called in every command and the
-   * subsystem periodic to properly apply limit switches
-   */
-  private void setControl() {
-    if (positionControl) {
-      motor.setControl(
-          mmControl
-              .withPosition(targetPosition)
-              .withLimitReverseMotion(reverseLimit.get())
-              .withLimitForwardMotion(forwardLimit.get()));
-    }
   }
 
   /**
@@ -285,5 +247,16 @@ public class Hood extends SubsystemBase {
    */
   private Rotation2d positionToAngle(Angle position) {
     return new Rotation2d(position.baseUnitMagnitude() + downPosition.get().baseUnitMagnitude());
+  }
+
+  public Command dutyCycleTestCommand(double dutyCycle) {
+    return startEnd(
+        () -> {
+          this.positionControl = false;
+          motor.setControl(dutyCycleOut.withOutput(dutyCycle));
+        },
+        () -> {
+          motor.setControl(dutyCycleOut.withOutput(0));
+        });
   }
 }
