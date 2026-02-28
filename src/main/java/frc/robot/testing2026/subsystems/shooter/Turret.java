@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.generic.RobotState;
 import frc.robot.generic.util.LoggedAnalogInput.LoggedAnalogInput;
 import frc.robot.generic.util.LoggedDIO.LoggedDIO;
+import frc.robot.generic.util.LoggedDIO.SimDIO;
 import frc.robot.generic.util.LoggedTalon.TalonFX.LoggedTalonFX;
 import frc.robot.generic.util.LoggedTunableMeasure;
 import frc.robot.generic.util.LoggedTunableNumber;
@@ -84,8 +85,8 @@ public class Turret extends SubsystemBase {
   public Turret(
       LoggedTalonFX motor, LoggedDIO reverseLimit, LoggedDIO forwardLimit, LoggedAnalogInput pot) {
     this.motor = motor;
-    this.reverseLimit = reverseLimit.withReversed(true);
-    this.forwardLimit = forwardLimit.withReversed(true);
+    this.reverseLimit = new SimDIO("Turret/ReverseLimit", () -> false);
+    this.forwardLimit = new SimDIO("Turret/ForwardLimit", () -> false);
     this.pot = pot.withAverageBits(256);
 
     var config =

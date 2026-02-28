@@ -2,6 +2,7 @@ package frc.robot.testing2026.subsystems.shooter;
 
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.Constants;
 import frc.robot.generic.util.LoggedAnalogInput.HardwareAnalogInput;
@@ -17,6 +18,7 @@ import frc.robot.generic.util.LoggedTalon.TalonFX.TalonFXSimpleMotorSim;
 import frc.robot.generic.util.LoggedTalon.TalonFXS.NoOppTalonFXS;
 import frc.robot.generic.util.LoggedTalon.TalonFXS.PhoenixTalonFXS;
 import frc.robot.generic.util.LoggedTalon.TalonFXS.TalonFXSSimpleMotorSim;
+import java.util.function.DoubleSupplier;
 import lombok.Getter;
 
 /** Container for shooting bits. This class will initialize the proper IO interfaces. */
@@ -28,15 +30,14 @@ public class Shooter {
   public Shooter(CANBus bus) {
     switch (Constants.currentMode) {
       case REAL -> {
-        // flywheel =
-        //     new Flywheel(
-        //         new PhoenixTalonFX(
-        //             25,
-        //             bus,
-        //             "Flywheel",
-        //             new PhoenixTalonFollower(26, MotorAlignmentValue.Opposed)));
+        flywheel =
+            new Flywheel(
+                new PhoenixTalonFX(
+                    25,
+                    bus,
+                    "Flywheel",
+                    new PhoenixTalonFollower(26, MotorAlignmentValue.Opposed)));
         hood = new Hood(new PhoenixTalonFXS(27, bus, "Hood"));
-        flywheel = new Flywheel(new NoOppTalonFX("Flywheel", 1));
         turret =
             new Turret(
                 new PhoenixTalonFX(28, bus, "Turret"),
@@ -77,5 +78,11 @@ public class Shooter {
 
   public ParallelCommandGroup homeCommand() {
     return new ParallelCommandGroup(/*hood.homingCommand(), */ turret.homingCommand());
+  }
+
+  public ParallelCommandGroup tuneCommand(DoubleSupplier speed, DoubleSupplier angle) {
+    return new ParallelCommandGroup(
+        flywheel.setpointTestCommand(speed),
+        hood.requestAngle(() -> Rotation2d.fromDegrees(angle.getAsDouble())));
   }
 }

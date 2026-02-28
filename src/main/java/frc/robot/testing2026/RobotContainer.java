@@ -23,6 +23,7 @@ import frc.robot.generic.util.SwerveBuilder;
 import frc.robot.testing2026.subsystems.shooter.Shooter;
 import org.littletonrobotics.junction.AutoLogOutputManager;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public class RobotContainer implements AbstractRobotContainer {
   public static RobotConfig config = RobotConfig.defaultCommandBased(RobotContainer::new);
@@ -104,11 +105,22 @@ public class RobotContainer implements AbstractRobotContainer {
     // controller.x().onTrue(shooter.getTurret().gotoPosition(() -> Degree.of(-120)));
     // controller.a().onTrue(shooter.getTurret().gotoPosition(() -> Degree.of(0)));
     // controller.b().onTrue(shooter.getTurret().gotoPosition(() -> Degree.of(120)));
-    controller.a().whileTrue(shooter.getHood().dutyCycleTestCommand(0.1));
-    controller.b().whileTrue(shooter.getHood().dutyCycleTestCommand(-0.1));
+    // controller.a().whileTrue(shooter.getHood().dutyCycleTestCommand(0.1));
+    // controller.b().whileTrue(shooter.getHood().dutyCycleTestCommand(-0.1));
 
     controller.rightBumper().onTrue(shooter.getHood().gotoAngle(() -> Rotation2d.fromDegrees(19)));
     controller.leftBumper().onTrue(shooter.getHood().gotoAngle(() -> Rotation2d.fromDegrees(38)));
+    // controller
+    //     .axisMagnitudeGreaterThan(XboxController.Axis.kLeftTrigger.value, 0.1)
+    //     .whileTrue(
+    //         shooter.getFlywheel().setpointTestCommand(() -> controller.getLeftTriggerAxis() *
+    // 100));
+    controller
+        .a()
+        .whileTrue(
+            shooter.tuneCommand(
+                new LoggedNetworkNumber("/Tuning/SpeedRPS", 0),
+                new LoggedNetworkNumber("/Tuning/HoodAngle", 18.575)));
   }
 
   /**
