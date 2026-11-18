@@ -1,40 +1,53 @@
-// Copyright 2021-2025 FRC 6328
+// Copyright (c) 2021-2026 Littleton Robotics
 // http://github.com/Mechanical-Advantage
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
+// Use of this source code is governed by a BSD
+// license that can be found in the LICENSE file
+// at the root directory of this project.
 
-package frc.robot.generic.subsystems.drive;
+package frc.robot.subsystems.drive;
 
-import static frc.robot.generic.subsystems.drive.DriveConstants.*;
-
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import frc.robot.util.PowerUtil;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 public class Module {
   private final ModuleIO io;
   private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
   private final int index;
+  private final SwerveModuleConstants<
+          TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
+      constants;
 
   private final Alert driveDisconnectedAlert;
   private final Alert turnDisconnectedAlert;
-  private final Alert cancoderDisconnectedAlert;
+  private final Alert turnEncoderDisconnectedAlert;
   private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {};
 
-  public Module(ModuleIO io, int index) {
+  // 5892
+  private final LoggedNetworkBoolean moduleDisable;
+  private final LoggedNetworkBoolean disableDrive;
+
+  private boolean isModuleDisabled = false;
+  private boolean isDriveDisabled = false;
+
+  public Module(
+      ModuleIO io,
+      int index,
+      SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
+          constants) {
     this.io = io;
     this.index = index;
+    this.constants = constants;
     driveDisconnectedAlert =
         new Alert(
             "Disconnected drive motor on module " + Integer.toString(index) + ".",
@@ -42,20 +55,39 @@ public class Module {
     turnDisconnectedAlert =
         new Alert(
             "Disconnected turn motor on module " + Integer.toString(index) + ".", AlertType.kError);
-    cancoderDisconnectedAlert =
+    turnEncoderDisconnectedAlert =
         new Alert(
-            "Disconnected CANcoder on module " + Integer.toString(index) + ".", AlertType.kError);
+            "Disconnected turn encoder on module " + Integer.toString(index) + ".",
+            AlertType.kError);
+    // 5892
+    moduleDisable =
+        new LoggedNetworkBoolean("SmartDashboard/Drive/Module" + index + "/Disable", false);
+    disableDrive =
+        new LoggedNetworkBoolean("SmartDashboard/Drive/Module" + index + "/DisableDrive", false);
+    PowerUtil.addCurrentSupplier(() -> inputs.driveCurrentAmps);
+    PowerUtil.addCurrentSupplier(() -> inputs.turnCurrentAmps);
   }
 
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
 
+    // 5892
+    if (moduleDisable.get() != isModuleDisabled) {
+      io.coastTurn(moduleDisable.get());
+      io.coastDrive(moduleDisable.get());
+      isModuleDisabled = moduleDisable.get();
+    }
+    if (disableDrive.get() != isDriveDisabled) {
+      io.coastDrive(disableDrive.get());
+      isDriveDisabled = disableDrive.get();
+    }
+
     // Calculate positions for odometry
     int sampleCount = inputs.odometryTimestamps.length; // All signals are sampled together
     odometryPositions = new SwerveModulePosition[sampleCount];
     for (int i = 0; i < sampleCount; i++) {
-      double positionMeters = inputs.odometryDrivePositionsRad[i] * wheelRadiusMeters;
+      double positionMeters = inputs.odometryDrivePositionsRad[i] * constants.WheelRadius;
       Rotation2d angle = inputs.odometryTurnPositions[i];
       odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
     }
@@ -63,7 +95,7 @@ public class Module {
     // Update alerts
     driveDisconnectedAlert.set(!inputs.driveConnected);
     turnDisconnectedAlert.set(!inputs.turnConnected);
-    cancoderDisconnectedAlert.set(!inputs.cancoderConnected);
+    turnEncoderDisconnectedAlert.set(!inputs.turnEncoderConnected);
   }
 
   /** Runs the module with the specified setpoint state. Mutates the state to optimize it. */
@@ -73,14 +105,19 @@ public class Module {
     state.cosineScale(inputs.turnPosition);
 
     // Apply setpoints
-    io.setDriveVelocity(state.speedMetersPerSecond / wheelRadiusMeters);
-    io.setTurnPosition(state.angle);
+    // 5892
+    if (!(isModuleDisabled || isDriveDisabled)) {
+      io.setDriveVelocity(state.speedMetersPerSecond / constants.WheelRadius);
+    }
+    if (!isModuleDisabled) {
+      io.setTurnPosition(state.angle);
+    }
   }
 
   /** Runs the module with the specified output while controlling to zero degrees. */
   public void runCharacterization(double output) {
     io.setDriveOpenLoop(output);
-    io.setTurnPosition(new Rotation2d());
+    io.setTurnPosition(Rotation2d.kZero);
   }
 
   /** Disables all outputs to motors. */
@@ -96,12 +133,12 @@ public class Module {
 
   /** Returns the current drive position of the module in meters. */
   public double getPositionMeters() {
-    return inputs.drivePositionRad * wheelRadiusMeters;
+    return inputs.drivePositionRad * constants.WheelRadius;
   }
 
   /** Returns the current drive velocity of the module in meters per second. */
   public double getVelocityMetersPerSec() {
-    return inputs.driveVelocityRadPerSec * wheelRadiusMeters;
+    return inputs.driveVelocityRadPerSec * constants.WheelRadius;
   }
 
   /** Returns the module position (turn angle and drive position). */
@@ -129,12 +166,13 @@ public class Module {
     return inputs.drivePositionRad;
   }
 
-  /** Returns the module velocity in rad/sec. */
+  /** Returns the module velocity in rotations/sec (Phoenix native units). */
   public double getFFCharacterizationVelocity() {
-    return inputs.driveVelocityRadPerSec;
+    return Units.radiansToRotations(inputs.driveVelocityRadPerSec);
   }
 
-  public void resetToAbsolute() {
-    io.resetToAbsolute();
+  // 5892
+  public void setDrivePID(double p, double i, double d, double ks, double kv) {
+    io.setDrivePID(p, i, d, ks, kv);
   }
 }
