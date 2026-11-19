@@ -5,10 +5,11 @@
 // license that can be found in the LICENSE file
 // at the root directory of this project.
 
-package frc.robot.subsystems.drive;
+package frc.robot.generic.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
+import static frc.robot.generic.subsystems.drive.DriveConstants.*;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
@@ -41,10 +42,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
-import frc.robot.RobotState;
-import frc.robot.generated.TunerConstants;
-import frc.robot.util.LocalADStarAK;
-import frc.robot.util.LoggedTunableNumber;
+import frc.robot.generic.RobotState;
+import frc.robot.generic.generated.TunerConstants;
+import frc.robot.generic.util.LocalADStarAK;
+import frc.robot.generic.util.LoggedTunableNumber;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
