@@ -23,7 +23,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.generic.Robot;
 import frc.robot.generic.commands.DriveCommands;
-import frc.robot.generic.subsystems.drive.Drive;
+import frc.robot.generic.generated.TunerConstants;
+import frc.robot.generic.subsystems.drive.*;
 import frc.robot.generic.util.AbstractRobotContainer;
 import frc.robot.generic.util.LoggedDIO.HardwareDIO;
 import frc.robot.generic.util.LoggedDIO.NoOppDio;
@@ -32,7 +33,6 @@ import frc.robot.generic.util.LoggedTalon.TalonFX.NoOppTalonFX;
 import frc.robot.generic.util.LoggedTalon.TalonFX.PhoenixTalonFX;
 import frc.robot.generic.util.LoggedTalon.TalonFX.TalonFXSimpleMotorSim;
 import frc.robot.generic.util.RobotConfig;
-import frc.robot.generic.util.SwerveBuilder;
 import frc.robot.outReach.subsystems.turret.Turret;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -51,7 +51,7 @@ public class RobotContainer implements AbstractRobotContainer {
   private final CANBus canBus = new CANBus();
 
   // Subsystems
-  private final Drive drive = SwerveBuilder.buildDefaultDrive(controller, 0.75);
+  private final Drive drive;
   private final Turret turret;
 
   // Dashboard inputs
@@ -67,6 +67,13 @@ public class RobotContainer implements AbstractRobotContainer {
                 new PhoenixTalonFX(20, canBus, "Turret"),
                 new HardwareDIO("ForwardLimit", 1),
                 new HardwareDIO("ReverseLimit", 0));
+        drive =
+            new Drive(
+                new GyroIOPigeon2(),
+                new ModuleIOTalonFX(TunerConstants.FrontLeft),
+                new ModuleIOTalonFX(TunerConstants.FrontRight),
+                new ModuleIOTalonFX(TunerConstants.BackLeft),
+                new ModuleIOTalonFX(TunerConstants.BackRight));
         break;
       case SIM:
         turret =
@@ -74,6 +81,13 @@ public class RobotContainer implements AbstractRobotContainer {
                 new TalonFXSimpleMotorSim(0, canBus, "Turret", 10, 10),
                 SimDIO.fromNT("ForwardLimit"),
                 SimDIO.fromNT("ReverseLimit"));
+        drive =
+            new Drive(
+                new GyroIO() {},
+                new ModuleIOSim(TunerConstants.FrontLeft),
+                new ModuleIOSim(TunerConstants.FrontRight),
+                new ModuleIOSim(TunerConstants.BackLeft),
+                new ModuleIOSim(TunerConstants.BackRight));
         break;
       default:
         turret =
@@ -81,6 +95,13 @@ public class RobotContainer implements AbstractRobotContainer {
                 new NoOppTalonFX("Turret", 0),
                 new NoOppDio("ForwardLimit"),
                 new NoOppDio("ReverseLimit"));
+        drive =
+            new Drive(
+                new GyroIOPigeon2(),
+                new ModuleIOTalonFX(TunerConstants.FrontLeft),
+                new ModuleIOTalonFX(TunerConstants.FrontRight),
+                new ModuleIOTalonFX(TunerConstants.BackLeft),
+                new ModuleIOTalonFX(TunerConstants.BackRight));
         break;
     }
 

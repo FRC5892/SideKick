@@ -11,7 +11,12 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.generic.Robot;
 import frc.robot.generic.commands.DriveCommands;
+import frc.robot.generic.generated.TunerConstants;
 import frc.robot.generic.subsystems.drive.Drive;
+import frc.robot.generic.subsystems.drive.GyroIO;
+import frc.robot.generic.subsystems.drive.GyroIOPigeon2;
+import frc.robot.generic.subsystems.drive.ModuleIOSim;
+import frc.robot.generic.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.generic.subsystems.vision.Vision;
 import frc.robot.generic.subsystems.vision.VisionConstants;
 import frc.robot.generic.subsystems.vision.VisionIO;
@@ -19,7 +24,6 @@ import frc.robot.generic.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.generic.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.generic.util.AbstractRobotContainer;
 import frc.robot.generic.util.RobotConfig;
-import frc.robot.generic.util.SwerveBuilder;
 import frc.robot.testing2026.subsystems.shooter.Shooter;
 import org.littletonrobotics.junction.AutoLogOutputManager;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -34,7 +38,7 @@ public class RobotContainer implements AbstractRobotContainer {
   private final CANBus canBus = new CANBus();
 
   // Subsystems
-  private final Drive drive = SwerveBuilder.buildDefaultDrive(controller);
+  private final Drive drive;
   private final Shooter shooter;
   private final Vision vision;
 
@@ -48,6 +52,14 @@ public class RobotContainer implements AbstractRobotContainer {
 
     switch (Constants.currentMode) {
       case REAL -> {
+        drive =
+            new Drive(
+                new GyroIOPigeon2(),
+                new ModuleIOTalonFX(TunerConstants.FrontLeft),
+                new ModuleIOTalonFX(TunerConstants.FrontRight),
+                new ModuleIOTalonFX(TunerConstants.BackLeft),
+                new ModuleIOTalonFX(TunerConstants.BackRight));
+
         vision =
             new Vision(
                 drive::addVisionMeasurement,
@@ -55,6 +67,13 @@ public class RobotContainer implements AbstractRobotContainer {
                     VisionConstants.camera0Name, VisionConstants.robotToCamera0));
       }
       case SIM -> {
+        drive =
+            new Drive(
+                new GyroIO() {},
+                new ModuleIOSim(TunerConstants.FrontLeft),
+                new ModuleIOSim(TunerConstants.FrontRight),
+                new ModuleIOSim(TunerConstants.BackLeft),
+                new ModuleIOSim(TunerConstants.BackRight));
         vision =
             new Vision(
                 drive::addVisionMeasurement,
@@ -62,6 +81,13 @@ public class RobotContainer implements AbstractRobotContainer {
                     VisionConstants.camera0Name, VisionConstants.robotToCamera0, drive::getPose));
       }
       default -> {
+        drive =
+            new Drive(
+                new GyroIOPigeon2(),
+                new ModuleIOTalonFX(TunerConstants.FrontLeft),
+                new ModuleIOTalonFX(TunerConstants.FrontRight),
+                new ModuleIOTalonFX(TunerConstants.BackLeft),
+                new ModuleIOTalonFX(TunerConstants.BackRight));
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
       }
     }

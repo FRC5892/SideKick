@@ -16,9 +16,8 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import frc.robot.generic.util.PowerUtil;
-import frc.robot.subsystems.drive.ModuleIOInputsAutoLogged;
 import frc.robot.generic.util.*;
+import frc.robot.generic.util.PowerUtil;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
